@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/ensure-dev-index.mjs && vite",
+    "dev": "vite",
     "build": "vite build",
     "build:pages": "VITE_BASE_PATH=/adv_calc/ vite build",
     "deploy:pages": "node scripts/deploy-pages.mjs",
