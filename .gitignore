@@ -1,4 +1,5 @@
 node_modules
 dist
 .pages-deploy
+index.pages.html
 .DS_Store

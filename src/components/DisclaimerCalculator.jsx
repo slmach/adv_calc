@@ -111,21 +111,24 @@ export default function DisclaimerCalculator() {
             <span>Подсветка</span>
           </label>
 
-          <label className="disclaimer-calc__scaling-mode">
-            <select
-              id="scaling-mode-select"
-              className="disclaimer-calc__scaling-select"
-              value={scalingMode}
-              onChange={(e) => setScalingMode(e.target.value)}
-              aria-label="Масштабирование дисклеймера"
-            >
-              {DISCLAIMER_SCALING_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div
+            className="disclaimer-calc__scaling-modes area-percent-options"
+            role="radiogroup"
+            aria-label="Масштабирование дисклеймера"
+          >
+            {DISCLAIMER_SCALING_OPTIONS.map((option) => (
+              <label key={option.value} className="area-percent-options__item">
+                <input
+                  type="radio"
+                  name="scalingMode"
+                  value={option.value}
+                  checked={scalingMode === option.value}
+                  onChange={() => setScalingMode(option.value)}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </section>
 

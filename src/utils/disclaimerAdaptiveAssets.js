@@ -84,7 +84,7 @@ export function getAdaptiveVariantLabel(variant) {
   return variant === 's' ? 'компактный (_s)' : 'широкий (_l)';
 }
 
-export const BANKRUPTCY_ADAPTIVE_L_MIN_HEIGHT_PX = 24;
+export const BANKRUPTCY_ADAPTIVE_L_MIN_HEIGHT_PX = 16;
 
 /** Минимальная высота и режим пропорций для расчёта в адаптивном режиме */
 export function getAdaptiveSizingRules(categoryId, variant, category) {
