@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:pages": "VITE_BASE_PATH=/adv_calc/ vite build",
-    "deploy:pages": "npm run build:pages && cp dist/index.html index.html && cp dist/assets/index-*.js dist/assets/index-*.css dist/assets/disclaimer-*.svg assets/ && rm -rf docs && cp -r dist docs && touch docs/.nojekyll",
+    "deploy:pages": "npm run build:pages && rm -rf docs && cp -r dist docs && touch docs/.nojekyll",
     "preview": "vite preview",
     "preview:pages": "VITE_BASE_PATH=/adv_calc/ vite preview"
   },
