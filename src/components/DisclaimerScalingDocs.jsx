@@ -5,11 +5,13 @@ import {
 } from '../utils/disclaimerAreaCalc.js';
 import { BANKRUPTCY_ADAPTIVE_L_MIN_HEIGHT_PX } from '../utils/disclaimerAdaptiveAssets.js';
 import { DISCLAIMER_CATEGORIES } from '../utils/disclaimerCategories.js';
+import { getDisclaimerPreviewText } from '../utils/disclaimerPreviewText.js';
 import {
   DISCLAIMER_FIXED_TARGET_PERCENT,
   DISCLAIMER_SCALING_ADAPTIVE,
   DISCLAIMER_SCALING_FIXED,
   DISCLAIMER_SCALING_PROPORTIONAL,
+  DISCLAIMER_SCALING_TEXT,
 } from '../utils/disclaimerScaling.js';
 import { SUGGEST_ROW_HORIZONTAL_CHROME_PX } from '../utils/suggestRowPreviewConstants.js';
 
@@ -35,7 +37,6 @@ function DocSection({ title, isActive, children }) {
   return (
     <details
       className={`disclaimer-calc__docs-mode${isActive ? ' disclaimer-calc__docs-mode--active' : ''}`}
-      open
     >
       <summary className="disclaimer-calc__docs-mode-summary">{title}</summary>
       <div className="disclaimer-calc__docs-mode-body">{children}</div>
@@ -45,8 +46,12 @@ function DocSection({ title, isActive, children }) {
 
 export default function DisclaimerScalingDocs({ scalingMode }) {
   return (
-    <section className="disclaimer-calc__docs" aria-label="Спецификация логики дисклеймера">
-      <h2 className="disclaimer-calc__docs-title">Логика отображения дисклеймера (для разработки)</h2>
+    <details className="disclaimer-calc__docs" aria-label="Спецификация логики дисклеймера">
+      <summary className="disclaimer-calc__docs-title">
+        Логика отображения дисклеймера (для разработки)
+      </summary>
+
+      <div className="disclaimer-calc__docs-inner">
       <p className="disclaimer-calc__docs-lead">
         Калькулятор считает размер зоны дисклеймера в превью строки suggest_row и
         показывает inline-SVG. Ниже — правила по режимам масштабирования. Активный
@@ -219,6 +224,50 @@ export default function DisclaimerScalingDocs({ scalingMode }) {
           Префиксы файлов: med, finance, diet, bankcr, energy.
         </p>
       </DocSection>
-    </section>
+
+      <DocSection
+        title="4. Текстовое"
+        isActive={scalingMode === DISCLAIMER_SCALING_TEXT}
+      >
+        <p>
+          <strong>Назначение:</strong> целевая площадь — доля типа + 2 п.п. от площади
+          ячейки (например, при норме 5% считаем 7%). Кегль подбирается так, чтобы текст
+          заполнял блок (8–20 px): площадь текста ≥ эффективной нормы, без
+          пустых полей по ширине. Если текст в одну строку справа укладывается и норма выполняется —
+          inline (высота ячейки только от copy). Иначе дисклеймер под строкой, высота ячейки
+          пересчитывается итеративно. В превью — текст, не SVG.
+        </p>
+        <h4>Тексты по типам</h4>
+        <ul className="disclaimer-calc__docs-list">
+          {DISCLAIMER_CATEGORIES.map((category) => (
+            <li key={category.id}>
+              <strong>{category.label}</strong> — {getDisclaimerPreviewText(category.id)}
+            </li>
+          ))}
+        </ul>
+        <h4>Отображение в превью</h4>
+        <ul className="disclaimer-calc__docs-list">
+          <li>
+            Типографика: 8–12 px — Medium (500), 13–15 px — Regular (400), &gt;15 px —
+            Light (300);
+            uppercase, letter-spacing
+            0.06em, line-height ×1.4.
+          </li>
+          <li>
+            <strong>Порядок переносов:</strong> (1) дисклеймер под copy → (2) сайт и «Реклама»
+            под заголовок → (3) заголовок до 2 строк.
+          </li>
+          <li>
+            Стартовый вариант: дисклеймер справа, заголовок + сайт в одну строку, заголовок
+            в 1 строку.
+          </li>
+          <li>
+            Высота ячейки: copy (padding 10 + строки по 20 px) + при шаге 1 зазор 4 px +
+            дисклеймер; площадь пересчитывается от новой высоты.
+          </li>
+        </ul>
+      </DocSection>
+      </div>
+    </details>
   );
 }

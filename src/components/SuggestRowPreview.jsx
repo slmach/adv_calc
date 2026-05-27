@@ -1,11 +1,82 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import iconInfo from '../../assets/icon-info.svg';
 import defaultDisclaimerRow from '../../assets/disclaimer-row-default.svg';
+import { getDisclaimerTextFontWeight } from '../utils/disclaimerTextLayout.js';
+import {
+  getSuggestCopyWidth,
+  resolveTextModeCopyLayout,
+  SUGGEST_ROW_COPY_DISCLAIMER_GAP_PX,
+} from '../utils/suggestTextCopyLayout.js';
 import {
   getSuggestRowPreviewDomain,
   getSuggestRowPreviewTitle,
 } from '../utils/suggestRowPreviewConstants.js';
 import './SuggestRowPreview.css';
+
+function DisclaimerBlock({
+  disclaimerWidth,
+  disclaimerHeight,
+  disclaimerFontSize,
+  disclaimerLineHeight,
+  disclaimerSingleLine,
+  disclaimerText,
+  disclaimerMarkup,
+  disclaimerImage,
+  showDisclaimerHighlight,
+}) {
+  if (!(disclaimerWidth > 0 && disclaimerHeight > 0)) {
+    return null;
+  }
+
+  const textStyle = disclaimerText
+    ? {
+        fontWeight: getDisclaimerTextFontWeight(disclaimerFontSize),
+        ...(disclaimerFontSize != null
+          ? {
+              fontSize: `${disclaimerFontSize}px`,
+              lineHeight:
+                disclaimerLineHeight != null
+                  ? `${disclaimerLineHeight}px`
+                  : undefined,
+            }
+          : {}),
+      }
+    : undefined;
+
+  return (
+    <div
+      className={`suggest-row-preview__disclaimer${showDisclaimerHighlight ? ' suggest-row-preview__disclaimer--highlight' : ''}${disclaimerText ? ' suggest-row-preview__disclaimer--text' : ''}`}
+      style={{
+        width: `${disclaimerWidth}px`,
+        height: `${disclaimerHeight}px`,
+        ...(disclaimerMarkup || disclaimerText
+          ? undefined
+          : {
+              backgroundImage: `url(${disclaimerImage})`,
+            }),
+      }}
+      {...(disclaimerMarkup && !disclaimerText
+        ? {
+            dangerouslySetInnerHTML: { __html: disclaimerMarkup },
+          }
+        : {})}
+    >
+      {disclaimerText && (
+        <span
+          className={[
+            'suggest-row-preview__disclaimer-text',
+            disclaimerSingleLine && 'suggest-row-preview__disclaimer-text--single-line',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={textStyle}
+        >
+          {disclaimerText}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export default function SuggestRowPreview({
   width = 1190,
@@ -14,8 +85,14 @@ export default function SuggestRowPreview({
   domain,
   disclaimerWidth,
   disclaimerHeight,
+  disclaimerFontSize,
+  disclaimerPlacement,
+  disclaimerSingleLine,
+  textCopyLayout: textCopyLayoutProp,
+  copyWidth: copyWidthProp,
   disclaimerSrc,
   disclaimerMarkup,
+  disclaimerText,
   showDisclaimerHighlight = true,
   centerDisclaimerInCell = false,
   onLayoutHeight,
@@ -24,6 +101,46 @@ export default function SuggestRowPreview({
   const disclaimerImage = disclaimerSrc || defaultDisclaimerRow;
   const previewTitle = title ?? getSuggestRowPreviewTitle('medicine');
   const previewDomain = domain ?? getSuggestRowPreviewDomain('medicine');
+  const textMode = Boolean(disclaimerText);
+  const disclaimerInline = disclaimerPlacement !== 'below';
+
+  const resolvedCopyWidth = useMemo(() => {
+    if (copyWidthProp != null) {
+      return copyWidthProp;
+    }
+
+    return getSuggestCopyWidth(
+      width,
+      disclaimerInline ? disclaimerWidth : 0,
+    );
+  }, [copyWidthProp, width, disclaimerInline, disclaimerWidth]);
+
+  const textCopyLayout = useMemo(() => {
+    if (!textMode) {
+      return null;
+    }
+
+    if (textCopyLayoutProp) {
+      return textCopyLayoutProp;
+    }
+
+    return resolveTextModeCopyLayout(
+      previewTitle,
+      previewDomain,
+      resolvedCopyWidth,
+    );
+  }, [
+    textMode,
+    textCopyLayoutProp,
+    previewTitle,
+    previewDomain,
+    resolvedCopyWidth,
+  ]);
+
+  const disclaimerLineHeight =
+    disclaimerFontSize != null
+      ? Math.ceil(disclaimerFontSize * 1.4)
+      : undefined;
 
   useLayoutEffect(() => {
     const node = rootRef.current;
@@ -48,15 +165,30 @@ export default function SuggestRowPreview({
     previewDomain,
     disclaimerWidth,
     disclaimerHeight,
+    disclaimerFontSize,
+    disclaimerPlacement,
     disclaimerMarkup,
+    disclaimerText,
+    textCopyLayout,
     showDisclaimerHighlight,
     centerDisclaimerInCell,
   ]);
 
+  const rootClassName = [
+    'suggest-row-preview',
+    centerDisclaimerInCell && 'suggest-row-preview--center-disclaimer',
+    textMode && disclaimerInline && 'suggest-row-preview--text-disclaimer-inline',
+    textMode && !disclaimerInline && 'suggest-row-preview--text-disclaimer-below',
+    textCopyLayout === 'inline' && 'suggest-row-preview--text-copy-inline',
+    textCopyLayout === 'stacked' && 'suggest-row-preview--text-copy-stacked',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <article
       ref={rootRef}
-      className={`suggest-row-preview${centerDisclaimerInCell ? ' suggest-row-preview--center-disclaimer' : ''}`}
+      className={rootClassName}
       style={{
         width: `${width}px`,
         minHeight: `${height}px`,
@@ -72,8 +204,24 @@ export default function SuggestRowPreview({
         </div>
 
         <div className="suggest-row-preview__content">
-          <div className="suggest-row-preview__title-row">
-            <div className="suggest-row-preview__copy">
+          <div
+            className="suggest-row-preview__title-row"
+            style={
+              textMode && disclaimerInline && disclaimerWidth > 0
+                ? {
+                    paddingRight: `${disclaimerWidth + SUGGEST_ROW_COPY_DISCLAIMER_GAP_PX}px`,
+                  }
+                : undefined
+            }
+          >
+            <div
+              className="suggest-row-preview__copy"
+              style={
+                textMode && resolvedCopyWidth > 0
+                  ? { maxWidth: `${resolvedCopyWidth}px` }
+                  : undefined
+              }
+            >
               <p className="suggest-row-preview__title">{previewTitle}</p>
               <div className="suggest-row-preview__meta">
                 <span className="suggest-row-preview__domain">{previewDomain}</span>
@@ -84,26 +232,34 @@ export default function SuggestRowPreview({
               </div>
             </div>
 
-            {disclaimerWidth > 0 && disclaimerHeight > 0 && (
-              <div
-                className={`suggest-row-preview__disclaimer${showDisclaimerHighlight ? ' suggest-row-preview__disclaimer--highlight' : ''}`}
-                style={{
-                  width: `${disclaimerWidth}px`,
-                  height: `${disclaimerHeight}px`,
-                  ...(disclaimerMarkup
-                    ? undefined
-                    : {
-                        backgroundImage: `url(${disclaimerImage})`,
-                      }),
-                }}
-                {...(disclaimerMarkup
-                  ? {
-                      dangerouslySetInnerHTML: { __html: disclaimerMarkup },
-                    }
-                  : {})}
+            {disclaimerInline && (
+              <DisclaimerBlock
+                disclaimerWidth={disclaimerWidth}
+                disclaimerHeight={disclaimerHeight}
+                disclaimerFontSize={disclaimerFontSize}
+                disclaimerLineHeight={disclaimerLineHeight}
+                disclaimerSingleLine={disclaimerSingleLine}
+                disclaimerText={disclaimerText}
+                disclaimerMarkup={disclaimerMarkup}
+                disclaimerImage={disclaimerImage}
+                showDisclaimerHighlight={showDisclaimerHighlight}
               />
             )}
           </div>
+
+          {!disclaimerInline && (
+            <DisclaimerBlock
+              disclaimerWidth={disclaimerWidth}
+              disclaimerHeight={disclaimerHeight}
+              disclaimerFontSize={disclaimerFontSize}
+              disclaimerLineHeight={disclaimerLineHeight}
+              disclaimerSingleLine={disclaimerSingleLine}
+              disclaimerText={disclaimerText}
+              disclaimerMarkup={disclaimerMarkup}
+              disclaimerImage={disclaimerImage}
+              showDisclaimerHighlight={showDisclaimerHighlight}
+            />
+          )}
         </div>
       </div>
 

@@ -3,11 +3,15 @@ import {
   CELL_SIZE_PRESETS,
   findCellSizePreset,
 } from '../utils/cellSizePresets.js';
-import { DISCLAIMER_CATEGORIES } from '../utils/disclaimerCategories.js';
+import {
+  DISCLAIMER_CATEGORIES,
+  getDisclaimerCategory,
+} from '../utils/disclaimerCategories.js';
 import {
   DISCLAIMER_SCALING_DEFAULT,
   DISCLAIMER_SCALING_OPTIONS,
 } from '../utils/disclaimerScaling.js';
+import { SUGGEST_THEME_DEFAULT } from '../utils/suggestThemes.js';
 import DisclaimerCategoryRow from './DisclaimerCategoryRow.jsx';
 import DisclaimerScalingDocs from './DisclaimerScalingDocs.jsx';
 import './DisclaimerCalculator.css';
@@ -22,6 +26,7 @@ const DEFAULTS = {
   cellHeight: DEFAULT_CELL.height,
   showDisclaimerHighlight: true,
   scalingMode: DISCLAIMER_SCALING_DEFAULT,
+  categoryId: DISCLAIMER_CATEGORIES[0].id,
 };
 
 function clampNumber(value, min, max) {
@@ -36,15 +41,18 @@ export default function DisclaimerCalculator() {
     DEFAULTS.showDisclaimerHighlight,
   );
   const [scalingMode, setScalingMode] = useState(DEFAULTS.scalingMode);
+  const [categoryId, setCategoryId] = useState(DEFAULTS.categoryId);
 
   const activePresetId = findCellSizePreset(cellWidth, cellHeight);
+  const activeCategory =
+    getDisclaimerCategory(categoryId) ?? DISCLAIMER_CATEGORIES[0];
 
   return (
     <div className="disclaimer-calc">
       <header className="disclaimer-calc__header">
         <p className="disclaimer-calc__lead">
-          Задайте ширину ячейки и пресет — ниже пять превью по типам дисклеймера
-          с расчётом размера под долю площади.
+          Задайте ширину ячейки и пресет — выберите тематику рекламы и режим
+          масштабирования; ниже превью саджеста с расчётом дисклеймера.
         </p>
       </header>
 
@@ -132,17 +140,37 @@ export default function DisclaimerCalculator() {
         </div>
       </section>
 
-      <section className="disclaimer-calc__rows" aria-label="Превью по типам">
-        {DISCLAIMER_CATEGORIES.map((category) => (
+      <section className="disclaimer-calc__preview-section" aria-label="Превью саджеста">
+        <div
+          className="disclaimer-calc__categories area-percent-options"
+          role="radiogroup"
+          aria-label="Тематика рекламы"
+        >
+          {DISCLAIMER_CATEGORIES.map((category) => (
+            <label key={category.id} className="area-percent-options__item">
+              <input
+                type="radio"
+                name="adCategory"
+                value={category.id}
+                checked={categoryId === category.id}
+                onChange={() => setCategoryId(category.id)}
+              />
+              <span>{category.label}</span>
+            </label>
+          ))}
+        </div>
+
+        <section className="disclaimer-calc__rows" aria-label="Превью">
           <DisclaimerCategoryRow
-            key={category.id}
-            category={category}
+            key={activeCategory.id}
+            category={activeCategory}
             cellWidth={cellWidth}
             cellHeight={cellHeight}
             showDisclaimerHighlight={showDisclaimerHighlight}
             scalingMode={scalingMode}
+            themeId={SUGGEST_THEME_DEFAULT}
           />
-        ))}
+        </section>
       </section>
 
       <DisclaimerScalingDocs scalingMode={scalingMode} />

@@ -1,0 +1,168 @@
+/* suggest — Figma 518:35589 */
+
+.suggest-panel {
+  --suggest-panel-bg: #fff;
+  --suggest-panel-row-bg: #fff;
+  --suggest-panel-omnibox-bg: #fff;
+  --suggest-panel-text: #000;
+  --suggest-panel-text-muted: rgba(0, 0, 0, 0.44);
+  --suggest-panel-link: #07f;
+  --suggest-panel-icon: rgba(0, 0, 0, 0.45);
+  --suggest-panel-separator: rgba(0, 0, 0, 0.09);
+  --suggest-panel-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  --suggest-panel-cursor: #2c2c32;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 8px;
+  border-radius: 24px;
+  background: var(--suggest-panel-bg);
+  box-shadow: var(--suggest-panel-shadow);
+}
+
+.suggest-panel--dark {
+  --suggest-panel-bg: #1f1f24;
+  --suggest-panel-row-bg: #1f1f24;
+  --suggest-panel-omnibox-bg: #2a2a30;
+  --suggest-panel-text: #fff;
+  --suggest-panel-text-muted: rgba(255, 255, 255, 0.45);
+  --suggest-panel-link: #5c9dff;
+  --suggest-panel-icon: rgba(255, 255, 255, 0.5);
+  --suggest-panel-separator: rgba(255, 255, 255, 0.12);
+  --suggest-panel-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --suggest-panel-cursor: #fff;
+}
+
+.suggest-panel--grey {
+  --suggest-panel-bg: #f5f5f7;
+  --suggest-panel-row-bg: #f5f5f7;
+  --suggest-panel-omnibox-bg: #fff;
+  --suggest-panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+}
+
+.suggest-panel--light,
+.suggest-panel--grey {
+  --fill-18: rgba(0, 0, 0, 0.18);
+  --text-primary: #000;
+  --link: #07f;
+  --text-quinary: rgba(0, 0, 0, 0.25);
+  --bg-secondary: var(--suggest-panel-row-bg);
+}
+
+.suggest-panel--dark {
+  --fill-18: rgba(255, 255, 255, 0.18);
+  --text-primary: #fff;
+  --link: #5c9dff;
+  --text-quinary: rgba(255, 255, 255, 0.35);
+  --bg-secondary: var(--suggest-panel-row-bg);
+}
+
+.suggest-panel__omnibox {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 6px 6px 16px;
+  background: var(--suggest-panel-omnibox-bg);
+}
+
+.suggest-panel__omnibox-mark {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.suggest-panel__omnibox-query {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  font-family: 'YS Text', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--suggest-panel-text);
+}
+
+.suggest-panel__omnibox-text {
+  white-space: nowrap;
+}
+
+.suggest-panel__omnibox-cursor {
+  width: 1.5px;
+  height: 20px;
+  margin-left: 0;
+  border-radius: 10px;
+  background: var(--suggest-panel-cursor);
+}
+
+.suggest-panel__omnibox-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 24px;
+  background: transparent;
+  color: var(--suggest-panel-icon);
+  cursor: default;
+}
+
+.suggest-panel__divider-wrap {
+  padding: 0 16px;
+  background: var(--suggest-panel-row-bg);
+}
+
+.suggest-panel__divider {
+  height: 1px;
+  background: var(--suggest-panel-separator);
+}
+
+.suggest-panel__ad-slot .suggest-row-preview,
+.suggest-organic-row {
+  position: relative;
+  isolation: isolate;
+}
+
+.suggest-panel__ad-slot .suggest-row-preview::after,
+.suggest-organic-row::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.suggest-panel__ad-slot .suggest-row-preview > *,
+.suggest-organic-row__inner {
+  position: relative;
+  z-index: 2;
+}
+
+.suggest-panel__ad-slot .suggest-row-preview:hover::after,
+.suggest-organic-row:hover::after {
+  opacity: 1;
+}
+
+.suggest-panel__ad-slot .suggest-row-preview {
+  width: 100% !important;
+  background: var(--suggest-panel-row-bg);
+}
+
+.suggest-panel--dark .suggest-row-preview__info img {
+  filter: brightness(0) invert(1);
+}
+
+.suggest-panel--dark .suggest-row-preview__disclaimer-text {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.suggest-panel__organic-list {
+  display: flex;
+  flex-direction: column;
+}

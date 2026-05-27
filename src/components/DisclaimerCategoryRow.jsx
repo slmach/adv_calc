@@ -11,18 +11,25 @@ import {
   getAdaptiveVariantLabel,
 } from '../utils/disclaimerAdaptiveAssets.js';
 import { getDisclaimerPreviewMarkup } from '../utils/disclaimerAssets.js';
+import { getDisclaimerPreviewText } from '../utils/disclaimerPreviewText.js';
 import { resolveAdaptiveVariant } from '../utils/resolveAdaptiveDisclaimer.js';
 import {
   DISCLAIMER_FIXED_TARGET_PERCENT,
   DISCLAIMER_SCALING_MODE_LABELS,
   isAdaptiveScalingMode,
   isFixedScalingMode,
+  isTextScalingMode,
   usesCategoryTargetPercent,
 } from '../utils/disclaimerScaling.js';
+import {
+  getTextModeEffectiveTargetPercent,
+  solveTextModeRowLayout,
+} from '../utils/disclaimerTextLayout.js';
 import {
   getSuggestRowPreviewDomain,
   getSuggestRowPreviewTitle,
 } from '../utils/suggestRowPreviewConstants.js';
+import SuggestPanelPreview from './SuggestPanelPreview.jsx';
 import SuggestRowPreview from './SuggestRowPreview.jsx';
 
 function formatArea(value) {
@@ -42,12 +49,18 @@ export default function DisclaimerCategoryRow({
   cellHeight,
   showDisclaimerHighlight,
   scalingMode,
+  themeId,
 }) {
   const fixedScaling = isFixedScalingMode(scalingMode);
   const adaptiveScaling = isAdaptiveScalingMode(scalingMode);
+  const textScaling = isTextScalingMode(scalingMode);
   const [layoutCellHeight, setLayoutCellHeight] = useState(cellHeight);
 
   useEffect(() => {
+    if (isTextScalingMode(scalingMode)) {
+      return;
+    }
+
     setLayoutCellHeight(cellHeight);
   }, [cellWidth, cellHeight, scalingMode]);
 
@@ -68,6 +81,10 @@ export default function DisclaimerCategoryRow({
   const targetPercent = usesCategoryTargetPercent(scalingMode)
     ? category.targetPercent
     : DISCLAIMER_FIXED_TARGET_PERCENT;
+
+  const textModeTargetPercent = textScaling
+    ? getTextModeEffectiveTargetPercent(targetPercent)
+    : targetPercent;
 
   const adaptiveVariantResolved = useMemo(() => {
     if (!adaptiveScaling) {
@@ -98,7 +115,22 @@ export default function DisclaimerCategoryRow({
     ? false
     : (adaptiveSizing?.minHeightKeepRatio ?? category.minHeightKeepRatio);
 
+  const previewTitle = getSuggestRowPreviewTitle(category.id);
+  const previewDomain = getSuggestRowPreviewDomain(category.id);
+  const previewDisclaimerText = getDisclaimerPreviewText(category.id);
+
   const result = useMemo(() => {
+    if (textScaling) {
+      return solveTextModeRowLayout({
+        cellWidth,
+        text: previewDisclaimerText,
+        title: previewTitle,
+        domain: previewDomain,
+        targetPercent,
+        maxInlineDisclaimerHeight: DISCLAIMER_MAX_HEIGHT_PX,
+      });
+    }
+
     return solveDisclaimerFromCellArea({
       cellWidth,
       cellHeight: layoutCellHeight,
@@ -119,10 +151,19 @@ export default function DisclaimerCategoryRow({
     effectiveMinHeightKeepRatio,
     targetPercent,
     scalingMode,
-    fixedScaling,
+    textScaling,
+    previewTitle,
+    previewDomain,
+    previewDisclaimerText,
   ]);
 
+  const disclaimerText = textScaling ? previewDisclaimerText : null;
+
   const markup = useMemo(() => {
+    if (textScaling) {
+      return null;
+    }
+
     if (adaptiveScaling) {
       return getAdaptiveDisclaimerPreviewMarkup(category.id, adaptiveVariant, {
         stretch: true,
@@ -130,29 +171,50 @@ export default function DisclaimerCategoryRow({
     }
 
     return getDisclaimerPreviewMarkup(category.id, { stretch: true });
-  }, [adaptiveScaling, category.id, adaptiveVariant]);
+  }, [adaptiveScaling, category.id, adaptiveVariant, textScaling]);
+
+  const previewRowHeight = textScaling ? result.cellHeight : layoutCellHeight;
 
   return (
     <article className="disclaimer-calc__row">
       <div className="disclaimer-calc__row-preview-scroll">
-        <SuggestRowPreview
+        <SuggestPanelPreview
           width={cellWidth}
-          height={layoutCellHeight}
-          title={getSuggestRowPreviewTitle(category.id)}
-          domain={getSuggestRowPreviewDomain(category.id)}
-          disclaimerWidth={result.width}
-          disclaimerHeight={result.height}
-          disclaimerMarkup={markup}
-          showDisclaimerHighlight={showDisclaimerHighlight}
-          centerDisclaimerInCell={fixedScaling}
-          onLayoutHeight={handleLayoutHeight}
-        />
+          themeId={themeId}
+          categoryId={category.id}
+        >
+          <SuggestRowPreview
+            width={cellWidth}
+            height={previewRowHeight}
+            title={getSuggestRowPreviewTitle(category.id)}
+            domain={getSuggestRowPreviewDomain(category.id)}
+            disclaimerWidth={result.width}
+            disclaimerHeight={result.height}
+            disclaimerFontSize={textScaling ? result.fontSizePx : undefined}
+            disclaimerPlacement={textScaling ? result.placement : undefined}
+            disclaimerSingleLine={
+              textScaling
+                ? (result.disclaimerLines?.length ?? 1) <= 1
+                : undefined
+            }
+            textCopyLayout={textScaling ? result.copyLayout : undefined}
+            copyWidth={textScaling ? result.copyWidth : undefined}
+            disclaimerMarkup={markup}
+            disclaimerText={disclaimerText}
+            showDisclaimerHighlight={showDisclaimerHighlight}
+            centerDisclaimerInCell={fixedScaling}
+            onLayoutHeight={textScaling ? undefined : handleLayoutHeight}
+          />
+        </SuggestPanelPreview>
       </div>
 
       <details className="disclaimer-calc__row-details">
         <summary className="disclaimer-calc__row-summary">
           <span className="disclaimer-calc__row-summary-size">
             {result.width} × {result.height} px
+            {textScaling && result.fontSizePx != null
+              ? ` · ${result.fontSizePx}px`
+              : ''}
           </span>
           <span className="disclaimer-calc__row-summary-label">{category.label}</span>
         </summary>
@@ -163,6 +225,12 @@ export default function DisclaimerCategoryRow({
             <span className="disclaimer-calc__size-sep">×</span>
             <span className="disclaimer-calc__size-value">{result.height}</span>
             <span className="disclaimer-calc__size-unit">px</span>
+            {textScaling && result.fontSizePx != null && (
+              <span className="disclaimer-calc__hint-inline">
+                {' '}
+                · кегль {result.fontSizePx} px
+              </span>
+            )}
           </p>
 
           <dl className="disclaimer-calc__metrics">
@@ -170,11 +238,19 @@ export default function DisclaimerCategoryRow({
               <dt>Ячейка</dt>
               <dd>
                 {cellWidth} × {result.cellHeight} px ({formatArea(result.cellArea)})
-                {result.cellHeight > cellHeight && (
+                {textScaling ? (
                   <span className="disclaimer-calc__hint-inline">
                     {' '}
-                    (базовая высота {cellHeight} px)
+                    (пресет {cellHeight} px; дисклеймер{' '}
+                    {result.placement === 'inline' ? 'в строке' : 'под строкой'})
                   </span>
+                ) : (
+                  result.cellHeight > cellHeight && (
+                    <span className="disclaimer-calc__hint-inline">
+                      {' '}
+                      (базовая высота {cellHeight} px)
+                    </span>
+                  )
                 )}
               </dd>
             </div>
@@ -182,6 +258,23 @@ export default function DisclaimerCategoryRow({
               <dt>Режим масштабирования</dt>
               <dd>{DISCLAIMER_SCALING_MODE_LABELS[scalingMode]}</dd>
             </div>
+            {textScaling && (
+              <div>
+                <dt>Макет дисклеймера</dt>
+                <dd>
+                  {result.placement === 'inline'
+                    ? 'Справа от copy'
+                    : 'Под copy (шаг 1)'}
+                  {' · '}
+                  copy:{' '}
+                  {result.copyLayout === 'inline'
+                    ? 'заголовок и сайт в одну строку'
+                    : 'сайт под заголовком'}
+                  {result.disclaimerLines?.length > 1 &&
+                    ` · дисклеймер ${result.disclaimerLines.length} строки`}
+                </dd>
+              </div>
+            )}
             {adaptiveScaling && (
               <div>
                 <dt>Макет дисклеймера</dt>
@@ -214,7 +307,16 @@ export default function DisclaimerCategoryRow({
               <dd>{formatArea(result.disclaimerArea)}</dd>
             </div>
             <div>
-              <dt>Целевая площадь ({formatPercent(targetPercent)})</dt>
+              <dt>
+                Целевая площадь (
+                {formatPercent(textScaling ? textModeTargetPercent : targetPercent)}
+                {textScaling && (
+                  <span className="disclaimer-calc__hint-inline">
+                    ; норма типа {formatPercent(targetPercent)} + 2 п.п.
+                  </span>
+                )}
+                )
+              </dt>
               <dd>{formatArea(Math.round(result.targetArea))}</dd>
             </div>
             <div>
@@ -224,7 +326,9 @@ export default function DisclaimerCategoryRow({
                 {!result.targetMet && (
                   <span className="disclaimer-calc__warn">
                     {' '}
-                    — цель {formatPercent(targetPercent)} не достигнута
+                    — цель{' '}
+                    {formatPercent(textScaling ? textModeTargetPercent : targetPercent)}{' '}
+                    не достигнута
                   </span>
                 )}
               </dd>

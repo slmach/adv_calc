@@ -3,3 +3,4 @@ dist
 .pages-deploy
 index.pages.html
 .DS_Store
+.vite

@@ -143,6 +143,98 @@
   height: 100%;
 }
 
+.suggest-row-preview__disclaimer--text {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  background-image: none !important;
+}
+
+/* Текстовый режим: заголовок + сайт в одну строку, если влезает */
+.suggest-row-preview--text-copy-inline,
+.suggest-row-preview--text-copy-stacked {
+  overflow: visible;
+}
+
+.suggest-row-preview--text-copy-inline .suggest-row-preview__copy {
+  flex: 0 1 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.suggest-row-preview--text-copy-inline .suggest-row-preview__title {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.suggest-row-preview--text-copy-inline .suggest-row-preview__meta {
+  flex-shrink: 0;
+}
+
+/* Inline: дисклеймер справа, не влияет на высоту строки */
+.suggest-row-preview--text-disclaimer-inline .suggest-row-preview__title-row {
+  position: relative;
+}
+
+.suggest-row-preview--text-disclaimer-inline .suggest-row-preview__disclaimer {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+/* Below: дисклеймер под copy, в потоке — участвует в высоте */
+.suggest-row-preview--text-disclaimer-below .suggest-row-preview__content > .suggest-row-preview__disclaimer {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.suggest-row-preview--text-copy-stacked .suggest-row-preview__copy {
+  flex: 0 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.suggest-row-preview--text-copy-stacked .suggest-row-preview__title {
+  white-space: normal;
+}
+
+.suggest-row-preview__disclaimer-text {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 2px;
+  font-family: 'YS Text', 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--disclaimer-font-size, 10px);
+  font-weight: var(--disclaimer-font-weight, 400);
+  line-height: var(--disclaimer-line-height, 14px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: rgba(0, 0, 0, 0.18);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.suggest-row-preview__disclaimer-text--single-line {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-overflow: ellipsis;
+}
+
 .suggest-row-preview__disclaimer--fit {
   display: flex;
   align-items: center;
