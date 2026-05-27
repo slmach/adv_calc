@@ -11,19 +11,6 @@ npm run dev
 
 Откройте адрес из терминала (обычно http://localhost:5173).
 
-## Демо на GitHub Pages
-
-**https://slmach.github.io/adv_calc/**
-
-Один раз в репозитории: **Settings → Pages → Build and deployment → Deploy from a branch** → ветка **`gh-pages`**, папка **`/ (root)`**. Подожди 1–2 минуты после включения.
-
-Обновить сайт после изменений:
-
-```bash
-npm run build
-./scripts/deploy-gh-pages.sh
-```
-
 ## Возможности
 
 - Слайдер и поле ввода ширины (по умолчанию 360px)
