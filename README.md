@@ -13,11 +13,16 @@ npm run dev
 
 ## Демо на GitHub Pages
 
-После push в `main` сайт публикуется автоматически:
-
 **https://slmach.github.io/adv_calc/**
 
-В репозитории: Settings → Pages → Source: **GitHub Actions** (если страница ещё не открылась).
+Один раз в репозитории: **Settings → Pages → Build and deployment → Deploy from a branch** → ветка **`gh-pages`**, папка **`/ (root)`**. Подожди 1–2 минуты после включения.
+
+Обновить сайт после изменений:
+
+```bash
+npm run build
+./scripts/deploy-gh-pages.sh
+```
 
 ## Возможности
 
