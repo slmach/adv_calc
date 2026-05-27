@@ -1,0 +1,19 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'YS Text', 'Helvetica Neue', Arial, sans-serif;
+  background: #fff;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+}

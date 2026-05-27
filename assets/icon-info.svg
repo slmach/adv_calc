@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon">
+<path d="M10.3113 5.25762C10.3113 4.53339 9.72421 3.94629 8.99998 3.94629C8.27576 3.94629 7.68866 4.53339 7.68866 5.25762C7.68866 5.98184 8.27576 6.56894 8.99998 6.56894C9.72421 6.56894 10.3113 5.98184 10.3113 5.25762Z" fill="var(--fill-0, black)" fill-opacity="0.44"/>
+<path d="M8.06223 7.5V14.25H9.93778V7.5H8.06223Z" fill="var(--fill-0, black)" fill-opacity="0.44"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M9 18C13.9706 18 18 13.9706 18 9C18 4.02944 13.9706 0 9 0C4.02944 0 0 4.02944 0 9C0 13.9706 4.02944 18 9 18ZM16.5 9C16.5 13.1421 13.1421 16.5 9 16.5C4.85786 16.5 1.5 13.1421 1.5 9C1.5 4.85786 4.85786 1.5 9 1.5C13.1421 1.5 16.5 4.85786 16.5 9Z" fill="var(--fill-0, black)" fill-opacity="0.44"/>
+</g>
+</svg>
