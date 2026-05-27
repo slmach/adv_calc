@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/ensure-dev-index.mjs && vite",
     "build": "vite build",
     "build:pages": "VITE_BASE_PATH=/adv_calc/ vite build",
-    "deploy:pages": "npm run build:pages && rm -rf docs && cp -r dist docs && touch docs/.nojekyll",
+    "deploy:pages": "node scripts/deploy-pages.mjs",
     "preview": "vite preview",
     "preview:pages": "VITE_BASE_PATH=/adv_calc/ vite preview"
   },
