@@ -18,6 +18,7 @@ writeFileSync(join(docs, '.nojekyll'), '');
 
 // production для коммита (корень main — GitHub Pages)
 copyFileSync(join(dist, 'index.html'), join(ROOT, 'index.pages.html'));
+copyFileSync(join(dist, 'index.html'), join(ROOT, 'index.html'));
 
 const builtAssets = readdirSync(join(dist, 'assets'));
 mkdirSync(assets, { recursive: true });
@@ -27,11 +28,5 @@ for (const name of builtAssets) {
   }
 }
 
-// production для коммита (корень main — GitHub Pages), см. index.pages.html
-copyFileSync(join(dist, 'index.html'), join(ROOT, 'index.pages.html'));
-
-// локальная разработка — всегда dev index
-copyFileSync(join(ROOT, 'index.dev.html'), join(ROOT, 'index.html'));
-
-console.log('✓ docs/ обновлена. Для push: git add docs assets');
-console.log('  Если Pages из корня: cp dist/index.html index.html && git add index.html');
+console.log('✓ docs/ и index.html (production) обновлены. Для push: git add docs assets index.html');
+console.log('  npm run dev подставит index.dev.html локально при старте.');
