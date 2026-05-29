@@ -60,6 +60,50 @@ export function countTitleLinesAtWidth(
   return lines;
 }
 
+/** Минимальная ширина блока (px), при которой заголовок укладывается в ≤ maxLines строк */
+export function measureTitleWidthForMaxLines(
+  text = SUGGEST_ROW_PREVIEW_TITLE,
+  maxLines = 2,
+) {
+  const ctx = getMeasureContext();
+  if (!ctx) {
+    return 0;
+  }
+
+  ctx.font = TITLE_FONT;
+
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return 0;
+  }
+
+  let hi = Math.ceil(ctx.measureText(text).width);
+  let lo = 0;
+  for (const word of words) {
+    lo = Math.max(lo, Math.ceil(ctx.measureText(word).width));
+  }
+
+  if (countTitleLinesAtWidth(text, hi) > maxLines) {
+    return hi;
+  }
+
+  let best = hi;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (mid <= 0) {
+      break;
+    }
+    if (countTitleLinesAtWidth(text, mid) <= maxLines) {
+      best = mid;
+      hi = mid - 1;
+    } else {
+      lo = mid + 1;
+    }
+  }
+
+  return best;
+}
+
 export function isTitleWrappedAtWidth(text, maxWidth) {
   // Нет места под заголовок (узкий _l + широкий дисклеймер) — нужен _s
   if (!Number.isFinite(maxWidth) || maxWidth <= 0) {

@@ -45,6 +45,16 @@ function measureMetaWidth(ctx, domain, adLabel = 'Реклама') {
   return domainWidth + 3 + dotWidth + 3 + adWidth;
 }
 
+/** Ширина мета-блока: «домен · Реклама» в одну строку */
+export function measureMetaBlockWidth(domain) {
+  const ctx = getMeasureContext();
+  if (!ctx) {
+    return 0;
+  }
+
+  return Math.ceil(measureMetaWidth(ctx, domain));
+}
+
 /** Реальная ширина copy: полный заголовок + сайт + «Реклама» в одну строку */
 export function measureCopyInlineWidth(title, domain) {
   const ctx = getMeasureContext();

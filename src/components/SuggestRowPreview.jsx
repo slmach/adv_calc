@@ -1,7 +1,10 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import iconInfo from '../../assets/icon-info.svg';
 import defaultDisclaimerRow from '../../assets/disclaimer-row-default.svg';
-import { getDisclaimerTextFontWeight } from '../utils/disclaimerTextLayout.js';
+import {
+  getDisclaimerTextFontWeight,
+  lineHeightForDisclaimerFontSize,
+} from '../utils/disclaimerTextLayout.js';
 import {
   getSuggestCopyWidth,
   resolveTextModeCopyLayout,
@@ -20,6 +23,7 @@ function DisclaimerBlock({
   disclaimerLineHeight,
   disclaimerSingleLine,
   disclaimerText,
+  disclaimerRenderLines,
   disclaimerMarkup,
   disclaimerImage,
   showDisclaimerHighlight,
@@ -27,6 +31,9 @@ function DisclaimerBlock({
   if (!(disclaimerWidth > 0 && disclaimerHeight > 0)) {
     return null;
   }
+
+  const renderMultiline =
+    Array.isArray(disclaimerRenderLines) && disclaimerRenderLines.length > 1;
 
   const textStyle = disclaimerText
     ? {
@@ -65,13 +72,25 @@ function DisclaimerBlock({
         <span
           className={[
             'suggest-row-preview__disclaimer-text',
-            disclaimerSingleLine && 'suggest-row-preview__disclaimer-text--single-line',
+            disclaimerSingleLine &&
+              !renderMultiline &&
+              'suggest-row-preview__disclaimer-text--single-line',
+            renderMultiline && 'suggest-row-preview__disclaimer-text--multiline',
           ]
             .filter(Boolean)
             .join(' ')}
           style={textStyle}
         >
-          {disclaimerText}
+          {renderMultiline
+            ? disclaimerRenderLines.map((line, index) => (
+                <span
+                  key={`${index}-${line}`}
+                  className="suggest-row-preview__disclaimer-line"
+                >
+                  {line}
+                </span>
+              ))
+            : disclaimerText}
         </span>
       )}
     </div>
@@ -86,6 +105,7 @@ export default function SuggestRowPreview({
   disclaimerWidth,
   disclaimerHeight,
   disclaimerFontSize,
+  disclaimerLineHeight: disclaimerLineHeightProp,
   disclaimerPlacement,
   disclaimerSingleLine,
   textCopyLayout: textCopyLayoutProp,
@@ -93,6 +113,7 @@ export default function SuggestRowPreview({
   disclaimerSrc,
   disclaimerMarkup,
   disclaimerText,
+  disclaimerRenderLines,
   showDisclaimerHighlight = true,
   centerDisclaimerInCell = false,
   onLayoutHeight,
@@ -138,9 +159,10 @@ export default function SuggestRowPreview({
   ]);
 
   const disclaimerLineHeight =
-    disclaimerFontSize != null
-      ? Math.ceil(disclaimerFontSize * 1.4)
-      : undefined;
+    disclaimerLineHeightProp ??
+    (disclaimerFontSize != null
+      ? lineHeightForDisclaimerFontSize(disclaimerFontSize)
+      : undefined);
 
   useLayoutEffect(() => {
     const node = rootRef.current;
@@ -240,6 +262,7 @@ export default function SuggestRowPreview({
                 disclaimerLineHeight={disclaimerLineHeight}
                 disclaimerSingleLine={disclaimerSingleLine}
                 disclaimerText={disclaimerText}
+                disclaimerRenderLines={disclaimerRenderLines}
                 disclaimerMarkup={disclaimerMarkup}
                 disclaimerImage={disclaimerImage}
                 showDisclaimerHighlight={showDisclaimerHighlight}

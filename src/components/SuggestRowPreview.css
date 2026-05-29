@@ -176,8 +176,13 @@
 }
 
 /* Inline: дисклеймер справа, не влияет на высоту строки */
+.suggest-row-preview--text-disclaimer-inline {
+  overflow: visible;
+}
+
 .suggest-row-preview--text-disclaimer-inline .suggest-row-preview__title-row {
   position: relative;
+  overflow: visible;
 }
 
 .suggest-row-preview--text-disclaimer-inline .suggest-row-preview__disclaimer {
@@ -186,6 +191,11 @@
   top: 50%;
   margin: 0;
   transform: translateY(-50%);
+}
+
+.suggest-row-preview--text-disclaimer-inline .suggest-row-preview__disclaimer--text {
+  align-items: center;
+  justify-content: center;
 }
 
 /* Below: дисклеймер под copy, в потоке — участвует в высоте */
@@ -233,6 +243,21 @@
   overflow-wrap: normal;
   word-break: normal;
   text-overflow: ellipsis;
+}
+
+/* Текстовое 2: дисклеймер сбалансированными строками справа */
+.suggest-row-preview__disclaimer-text--multiline {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.suggest-row-preview__disclaimer-line {
+  display: block;
+  white-space: nowrap;
 }
 
 .suggest-row-preview__disclaimer--fit {

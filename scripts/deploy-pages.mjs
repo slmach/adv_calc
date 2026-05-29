@@ -27,7 +27,11 @@ for (const name of builtAssets) {
   }
 }
 
-// production index в корне — GitHub Pages отдаёт его при источнике «/»
-copyFileSync(join(dist, 'index.html'), join(ROOT, 'index.html'));
+// production для коммита (корень main — GitHub Pages), см. index.pages.html
+copyFileSync(join(dist, 'index.html'), join(ROOT, 'index.pages.html'));
 
-console.log('✓ docs/ и index.html обновлены. Для push: git add docs index.html assets && git commit');
+// локальная разработка — всегда dev index
+copyFileSync(join(ROOT, 'index.dev.html'), join(ROOT, 'index.html'));
+
+console.log('✓ docs/ обновлена. Для push: git add docs assets');
+console.log('  Если Pages из корня: cp dist/index.html index.html && git add index.html');

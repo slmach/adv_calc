@@ -16,3 +16,11 @@ export function getDisclaimerPreviewText(categoryId) {
     DISCLAIMER_PREVIEW_TEXT_BY_CATEGORY.medicine
   );
 }
+
+/** Предпочтительные строки дисклеймера в text2 (уже в uppercase) */
+export function getDisclaimerText2PreferredLines(categoryId) {
+  if (categoryId === 'diet') {
+    return ['НЕ ЯВЛЯЕТСЯ', 'ЛЕКАРСТВОМ'];
+  }
+  return null;
+}

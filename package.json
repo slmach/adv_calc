@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node -e \"const fs=require('fs');const p='index.html';if(!fs.readFileSync(p,'utf8').includes('/src/main.jsx'))fs.copyFileSync('index.dev.html',p)\" && vite",
+    "dev": "node -e \"require('fs').copyFileSync('index.dev.html','index.html')\" && vite",
     "build": "vite build",
     "build:pages": "VITE_BASE_PATH=/adv_calc/ vite build",
     "deploy:pages": "node scripts/deploy-pages.mjs",
