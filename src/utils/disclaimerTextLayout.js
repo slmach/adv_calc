@@ -81,40 +81,29 @@ export const DISCLAIMER_TEXT_PADDING_X_PX = 0;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT = 300;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR = 400;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM = 500;
-/** С кегля ≥ этого — Regular; ниже — Medium */
-export const DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR_THRESHOLD_PX = 13;
-/** С кегля > этого — Light */
-export const DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT_THRESHOLD_PX = 15;
-/** Текстовое 3: 8–10 px — Regular, > 10 px — Light */
-export const DISCLAIMER_TEXT_3_FONT_WEIGHT_LIGHT_THRESHOLD_PX = 10;
+/** До 10 px включительно — Medium */
+export const DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM_MAX_PX = 10;
+/** 11 px — Regular; с 12 px — Light */
+export const DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT_MIN_PX = 12;
 
 export function getDisclaimerTextFontWeight(fontSizePx) {
   if (!Number.isFinite(fontSizePx)) {
     return DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM;
   }
 
-  if (fontSizePx > DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT_THRESHOLD_PX) {
+  if (fontSizePx >= DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT_MIN_PX) {
     return DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT;
   }
 
-  if (fontSizePx >= DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR_THRESHOLD_PX) {
+  if (fontSizePx > DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM_MAX_PX) {
     return DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR;
   }
 
   return DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM;
 }
 
-export function getDisclaimerText3FontWeight(fontSizePx) {
-  if (!Number.isFinite(fontSizePx)) {
-    return DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR;
-  }
-
-  if (fontSizePx > DISCLAIMER_TEXT_3_FONT_WEIGHT_LIGHT_THRESHOLD_PX) {
-    return DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT;
-  }
-
-  return DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR;
-}
+/** @deprecated используйте getDisclaimerTextFontWeight */
+export const getDisclaimerText3FontWeight = getDisclaimerTextFontWeight;
 
 let resolveDisclaimerFontWeight = getDisclaimerTextFontWeight;
 
@@ -1177,7 +1166,7 @@ export function solveTextMode2RowLayout({
  * Кегль как в «Текстовое» (от 8 px), подбор под целевую площадь, 1+ строк по необходимости.
  */
 export function solveTextMode3RowLayout(params) {
-  return withDisclaimerFontWeightResolver(getDisclaimerText3FontWeight, () =>
+  return withDisclaimerFontWeightResolver(getDisclaimerTextFontWeight, () =>
     solveTextMode3RowLayoutInner(params),
   );
 }

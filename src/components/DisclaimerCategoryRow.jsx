@@ -13,6 +13,7 @@ import {
 import { getDisclaimerPreviewMarkup } from '../utils/disclaimerAssets.js';
 import {
   getDisclaimerPreviewText,
+  getDisclaimerText2PreviewText,
   getDisclaimerText3PreviewText,
   getDisclaimerText2PreferredLines,
 } from '../utils/disclaimerPreviewText.js';
@@ -30,7 +31,6 @@ import {
 } from '../utils/disclaimerScaling.js';
 import {
   getDisclaimerTextFontWeight,
-  getDisclaimerText3FontWeight,
   getTextModeEffectiveTargetPercent,
   getText2MaxDisclaimerLines,
   getText2MinDisclaimerLines,
@@ -139,7 +139,9 @@ export default function DisclaimerCategoryRow({
   const previewDomain = getSuggestRowPreviewDomain(category.id);
   const previewDisclaimerText = text3Scaling
     ? getDisclaimerText3PreviewText(category.id)
-    : getDisclaimerPreviewText(category.id);
+    : text2Scaling
+      ? getDisclaimerText2PreviewText(category.id)
+      : getDisclaimerPreviewText(category.id);
 
   const result = useMemo(() => {
     if (text3Scaling) {
@@ -257,9 +259,7 @@ export default function DisclaimerCategoryRow({
             disclaimerText={disclaimerText}
             showDisclaimerHighlight={showDisclaimerHighlight}
             centerDisclaimerInCell={fixedScaling}
-            getDisclaimerFontWeight={
-              text3Scaling ? getDisclaimerText3FontWeight : getDisclaimerTextFontWeight
-            }
+            getDisclaimerFontWeight={getDisclaimerTextFontWeight}
             onLayoutHeight={anyTextScaling ? undefined : handleLayoutHeight}
           />
         </SuggestPanelPreview>

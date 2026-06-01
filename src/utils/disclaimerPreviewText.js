@@ -10,9 +10,12 @@ export const DISCLAIMER_PREVIEW_TEXT_BY_CATEGORY = {
   energy: 'Чрезмерное употребление вредит здоровью',
 };
 
-/** Тексты дисклеймера только для режима «Текстовое 3» (если отличаются) */
-export const DISCLAIMER_TEXT3_PREVIEW_TEXT_BY_CATEGORY = {
-  diet: 'Биологически активная добавка. Не является лекарственным средством',
+/** Диета (БАД): текст для «Текстовое 2» и «Текстовое 3» */
+export const DISCLAIMER_DIET_EXTENDED_TEXT =
+  'Биологически активная добавка. Не является лекарственным средством';
+
+const DISCLAIMER_EXTENDED_PREVIEW_TEXT_BY_CATEGORY = {
+  diet: DISCLAIMER_DIET_EXTENDED_TEXT,
 };
 
 export function getDisclaimerPreviewText(categoryId) {
@@ -22,17 +25,24 @@ export function getDisclaimerPreviewText(categoryId) {
   );
 }
 
-export function getDisclaimerText3PreviewText(categoryId) {
+export function getDisclaimerText2PreviewText(categoryId) {
   return (
-    DISCLAIMER_TEXT3_PREVIEW_TEXT_BY_CATEGORY[categoryId] ??
+    DISCLAIMER_EXTENDED_PREVIEW_TEXT_BY_CATEGORY[categoryId] ??
     getDisclaimerPreviewText(categoryId)
   );
+}
+
+export function getDisclaimerText3PreviewText(categoryId) {
+  return getDisclaimerText2PreviewText(categoryId);
 }
 
 /** Предпочтительные строки дисклеймера в text2 (уже в uppercase) */
 export function getDisclaimerText2PreferredLines(categoryId) {
   if (categoryId === 'diet') {
-    return ['НЕ ЯВЛЯЕТСЯ', 'ЛЕКАРСТВОМ'];
+    return [
+      'БИОЛОГИЧЕСКИ АКТИВНАЯ ДОБАВКА.',
+      'НЕ ЯВЛЯЕТСЯ ЛЕКАРСТВЕННЫМ СРЕДСТВОМ',
+    ];
   }
   return null;
 }

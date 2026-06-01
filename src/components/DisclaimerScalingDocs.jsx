@@ -5,7 +5,7 @@ import {
 } from '../utils/disclaimerAreaCalc.js';
 import { BANKRUPTCY_ADAPTIVE_L_MIN_HEIGHT_PX } from '../utils/disclaimerAdaptiveAssets.js';
 import { DISCLAIMER_CATEGORIES } from '../utils/disclaimerCategories.js';
-import { getDisclaimerPreviewText, getDisclaimerText3PreviewText } from '../utils/disclaimerPreviewText.js';
+import { getDisclaimerPreviewText, getDisclaimerText2PreviewText } from '../utils/disclaimerPreviewText.js';
 import {
   DISCLAIMER_FIXED_TARGET_PERCENT,
   DISCLAIMER_SCALING_ADAPTIVE,
@@ -250,7 +250,7 @@ export default function DisclaimerScalingDocs({ scalingMode }) {
         <h4>Отображение в превью</h4>
         <ul className="disclaimer-calc__docs-list">
           <li>
-            Типографика: 8–12 px — Medium (500), 13–15 px — Regular (400), &gt;15 px —
+            Типографика: до 10 px — Medium (500), 11 px — Regular (400), с 12 px —
             Light (300);
             uppercase, letter-spacing
             0.06em, line-height ×1.2.
@@ -276,46 +276,65 @@ export default function DisclaimerScalingDocs({ scalingMode }) {
       >
         <p>
           <strong>Назначение:</strong> как «Текстовое» (целевая площадь = норма типа + 4
-          п.п.), но дисклеймер <strong>всегда справа</strong> от copy — он не уходит вниз.
-          Минимальный кегль — <strong>6 px</strong> (вместо 8). В превью — текст, не SVG.
-          У медицины дисклеймер — не больше <strong>2 строк</strong>; у финансов и
-          банкротства — <strong>не меньше 2 строк</strong>, при этом заголовок + сайт
-          + «Реклама» могут оставаться в одну строку, если умещаются рядом с
-          двустрочным дисклеймером.
+          п.п.), но дисклеймер <strong>всегда справа</strong> от copy — не уходит под строку.
+          Кегль подбирается под площадь в диапазоне <strong>6–32 px</strong>. В превью — текст,
+          не SVG.
         </p>
+        <h4>Лимиты строк дисклеймера</h4>
+        <ul className="disclaimer-calc__docs-list">
+          <li>
+            <strong>Медицина</strong> — не больше <strong>2 строк</strong>.
+          </li>
+          <li>
+            <strong>Финансы, банкротство</strong> — не меньше <strong>2 строк</strong>; при
+            этом заголовок + сайт + «Реклама» могут оставаться в одну строку, если умещаются
+            рядом с двустрочным дисклеймером.
+          </li>
+          <li>Остальные типы — от 1 до 4 строк по необходимости.</li>
+        </ul>
         <h4>Порядок раскладки</h4>
         <ul className="disclaimer-calc__docs-list">
           <li>
-            <strong>(1)</strong> всё в одну строку: заголовок + сайт + «Реклама» и
-            дисклеймер в 1 строку справа.
+            <strong>(1)</strong> всё в одну строку: заголовок + сайт + «Реклама» и дисклеймер
+            в 1 строку справа.
           </li>
           <li>
-            <strong>(2)</strong> если не помещается — сайт и «Реклама» переносятся под
-            заголовок (copy в столбик), <strong>заголовок остаётся в 1 строку</strong>,
-            дисклеймер растёт по числу строк: 1 → 2 → … (до 4, у медицины до 2) по площади.
+            <strong>(2)</strong> если не помещается — сайт и «Реклама» под заголовок (copy в
+            столбик), <strong>заголовок в 1 строку</strong>, дисклеймер 1 → 2 → … строк по
+            площади (с учётом лимитов типа).
           </li>
           <li>
-            <strong>(3)</strong> только если и так не помещается — заголовок переносится
-            на 2 строки, но <strong>только когда дисклеймер уже в 2+ строках</strong>
-            (при дисклеймере в 1 строку тайтл остаётся в одну); не больше 2 строк тайтла.
+            <strong>(3)</strong> заголовок на 2 строки — только если дисклеймер уже в{' '}
+            <strong>2+ строках</strong> (при дисклеймере в 1 строку тайтл остаётся в одну);
+            не больше 2 строк тайтла.
           </li>
           <li>
-            Диета: предпочтительный перенос «НЕ ЯВЛЯЕТСЯ» / «ЛЕКАРСТВОМ» в 2 строки.
+            Строки дисклеймера — сбалансированно по числу символов, перенос целыми словами;
+            минимально возможное число строк в рамках лимитов.
           </li>
           <li>
-            Дисклеймер делится на строки с ≈ одинаковым числом символов (перенос целыми
-            словами), берётся минимально возможное число строк.
+            <strong>Диета:</strong> предпочтительный перенос «БИОЛОГИЧЕСКИ АКТИВНАЯ ДОБАВКА.» /
+            «НЕ ЯВЛЯЕТСЯ ЛЕКАРСТВЕННЫМ СРЕДСТВОМ».
           </li>
+        </ul>
+        <h4>Тексты по типам</h4>
+        <ul className="disclaimer-calc__docs-list">
+          {DISCLAIMER_CATEGORIES.map((category) => (
+            <li key={category.id}>
+              <strong>{category.label}</strong> —{' '}
+              {getDisclaimerText2PreviewText(category.id)}
+            </li>
+          ))}
         </ul>
         <h4>Отображение в превью</h4>
         <ul className="disclaimer-calc__docs-list">
           <li>
-            Кегль 6–32 px; вес: 8–12 px — Medium (500), 13–15 px — Regular (400), &gt;15 px —
-            Light (300); line-height ×1.2.
+            Типографика: до 10 px — Medium (500), 11 px — Regular (400), с 12 px — Light
+            (300); uppercase, letter-spacing 0.06em, line-height ×1.2.
           </li>
           <li>
-            Высота ячейки = padding 10×2 + высота copy; дисклеймер на высоту строки не
-            влияет (может выступать за её границы).
+            Высота ячейки = padding 10×2 + высота copy; дисклеймер на высоту строки не влияет
+            (может выступать за границы).
           </li>
           <li>Дисклеймер вертикально центрируется справа относительно блока copy.</li>
         </ul>
@@ -350,15 +369,15 @@ export default function DisclaimerScalingDocs({ scalingMode }) {
           {DISCLAIMER_CATEGORIES.map((category) => (
             <li key={category.id}>
               <strong>{category.label}</strong> —{' '}
-              {getDisclaimerText3PreviewText(category.id)}
+              {getDisclaimerText2PreviewText(category.id)}
             </li>
           ))}
         </ul>
         <h4>Отображение в превью</h4>
         <ul className="disclaimer-calc__docs-list">
           <li>
-            Типографика: 8–10 px — Regular (400), &gt;10 px — Light (300); uppercase,
-            letter-spacing 0.06em, line-height ×1.2.
+            Типографика: до 10 px — Medium (500), 11 px — Regular (400), с 12 px — Light
+            (300); uppercase, letter-spacing 0.06em, line-height ×1.2.
           </li>
           <li>Дисклеймер в потоке под copy, над юр. текстом по кнопке (i).</li>
         </ul>
