@@ -5,45 +5,6 @@
   min-height: 100vh;
 }
 
-.app__tabs {
-  display: flex;
-  flex-shrink: 0;
-  gap: 4px;
-  padding: 12px 20px 0;
-  background: #fff;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.app {
-  display: grid;
-  grid-template-columns: 15% 1fr;
-  flex: 1;
-  min-height: 0;
-}
-
-.app__tab {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-  line-height: 18px;
-  color: rgba(0, 0, 0, 0.56);
-  cursor: pointer;
-}
-
-.app__tab:hover {
-  color: #000;
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.app__tab--active {
-  color: #000;
-  font-weight: 500;
-  background: #f5f5f5;
-}
-
 .app__col {
   display: flex;
   flex-direction: column;

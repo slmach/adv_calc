@@ -294,25 +294,12 @@
 }
 
 .suggest-row-preview__legal-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s ease-in-out;
-}
-
-.suggest-row-preview__legal-wrap--open {
-  grid-template-rows: 1fr;
-}
-
-.suggest-row-preview__legal-inner {
-  overflow: hidden;
-  min-height: 0;
+  display: block;
 }
 
 .suggest-row-preview__legal-text {
   margin: 4px 0 0;
   padding: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
   font-family: 'YS Text', 'Helvetica Neue', Arial, sans-serif;
   font-size: 10px;
   font-weight: 400;
@@ -320,10 +307,6 @@
   color: rgba(0, 0, 0, 0.18);
   overflow-wrap: anywhere;
   word-break: break-word;
-}
-
-.suggest-row-preview__legal-wrap--open .suggest-row-preview__legal-text {
-  opacity: 1;
 }
 
 .suggest-row-preview__info img {

@@ -116,7 +116,7 @@ export default function SuggestRowPreview({
   disclaimerMarkup,
   disclaimerText,
   disclaimerRenderLines,
-  showDisclaimerHighlight = true,
+  showDisclaimerHighlight = false,
   centerDisclaimerInCell = false,
   getDisclaimerFontWeight = getDisclaimerTextFontWeight,
   advertiserLegalText = SUGGEST_ROW_ADVERTISER_LEGAL_TEXT,
@@ -125,8 +125,6 @@ export default function SuggestRowPreview({
   const rootRef = useRef(null);
   const layoutCoreRef = useRef(null);
   const [legalExpanded, setLegalExpanded] = useState(false);
-  /** Пока true — строка может расти (открыто или идёт анимация закрытия) */
-  const [legalRowGrown, setLegalRowGrown] = useState(false);
   const disclaimerImage = disclaimerSrc || defaultDisclaimerRow;
   const previewTitle = title ?? getSuggestRowPreviewTitle('medicine');
   const previewDomain = domain ?? getSuggestRowPreviewDomain('medicine');
@@ -179,7 +177,7 @@ export default function SuggestRowPreview({
     }
 
     const report = () => {
-      if (legalExpanded || legalRowGrown) {
+      if (legalExpanded) {
         return;
       }
 
@@ -192,10 +190,6 @@ export default function SuggestRowPreview({
     report();
     const observer = new ResizeObserver(report);
     observer.observe(root);
-    const legalEl = root.querySelector('.suggest-row-preview__legal-wrap');
-    if (legalEl) {
-      observer.observe(legalEl);
-    }
 
     return () => observer.disconnect();
   }, [
@@ -214,47 +208,6 @@ export default function SuggestRowPreview({
     showDisclaimerHighlight,
     centerDisclaimerInCell,
     legalExpanded,
-    legalRowGrown,
-  ]);
-
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) {
-      return undefined;
-    }
-
-    const legalTextEl = root.querySelector('.suggest-row-preview__legal-text');
-    if (!legalTextEl) {
-      return undefined;
-    }
-
-    const onTransitionEnd = (event) => {
-      if (event.target !== legalTextEl || event.propertyName !== 'opacity') {
-        return;
-      }
-
-      if (legalExpanded) {
-        return;
-      }
-
-      setLegalRowGrown(false);
-
-      if (!onLayoutHeight) {
-        return;
-      }
-
-      const legalEl = root.querySelector('.suggest-row-preview__legal-wrap');
-      const legalHeight = legalEl?.getBoundingClientRect().height ?? 0;
-      const totalHeight = root.getBoundingClientRect().height;
-      onLayoutHeight(Math.ceil(totalHeight - legalHeight));
-    };
-
-    legalTextEl.addEventListener('transitionend', onTransitionEnd);
-    return () => legalTextEl.removeEventListener('transitionend', onTransitionEnd);
-  }, [
-    legalExpanded,
-    onLayoutHeight,
-    advertiserLegalText,
   ]);
 
   const rootClassName = [
@@ -279,7 +232,7 @@ export default function SuggestRowPreview({
         ...(centerDisclaimerInCell
           ? { '--row-min-height': `${height}px` }
           : { '--row-calculated-height': `${height}px` }),
-        ...(legalRowGrown ? { height: 'auto' } : undefined),
+        ...(legalExpanded ? { height: 'auto' } : { height: `${height}px` }),
       }}
       data-name="suggest_row"
     >
@@ -352,18 +305,9 @@ export default function SuggestRowPreview({
             )}
           </div>
 
-          {advertiserLegalText && (
-            <div
-              className={[
-                'suggest-row-preview__legal-wrap',
-                legalExpanded && 'suggest-row-preview__legal-wrap--open',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <div className="suggest-row-preview__legal-inner">
-                <p className="suggest-row-preview__legal-text">{advertiserLegalText}</p>
-              </div>
+          {advertiserLegalText && legalExpanded && (
+            <div className="suggest-row-preview__legal-wrap">
+              <p className="suggest-row-preview__legal-text">{advertiserLegalText}</p>
             </div>
           )}
         </div>
@@ -380,14 +324,7 @@ export default function SuggestRowPreview({
             .join(' ')}
           aria-label="Подробнее о рекламе"
           aria-expanded={legalExpanded}
-          onClick={() => {
-            if (legalExpanded) {
-              setLegalExpanded(false);
-              return;
-            }
-            setLegalExpanded(true);
-            setLegalRowGrown(true);
-          }}
+          onClick={() => setLegalExpanded((open) => !open)}
         >
           <img src={iconInfo} alt="" width={18} height={18} />
         </button>

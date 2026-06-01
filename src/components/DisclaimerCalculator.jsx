@@ -25,7 +25,7 @@ const DEFAULT_CELL = getDefaultCellSizePreset();
 const DEFAULTS = {
   cellWidth: DEFAULT_CELL.width,
   cellHeight: DEFAULT_CELL.height,
-  showDisclaimerHighlight: true,
+  showDisclaimerHighlight: false,
   scalingMode: DISCLAIMER_SCALING_DEFAULT,
   categoryId: DISCLAIMER_CATEGORIES[0].id,
 };
