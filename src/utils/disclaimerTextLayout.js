@@ -5,6 +5,7 @@ import {
   getTextModeRowContentHeight,
   measureCopyInlineWidth,
   measureMetaBlockWidth,
+  resolveTextModeCopyLayout,
   SUGGEST_ROW_COPY_CHROME_PX,
   SUGGEST_ROW_COPY_DISCLAIMER_GAP_PX,
   SUGGEST_ROW_PADDING_Y_PX,
@@ -43,6 +44,31 @@ export function getText2MinDisclaimerLines(categoryId) {
   }
   return 1;
 }
+
+function getTextModeInlineRowContentHeight(
+  copyHeight,
+  disclaimerHeight,
+  includeDisclaimerInRowHeight,
+) {
+  return includeDisclaimerInRowHeight
+    ? Math.max(copyHeight, disclaimerHeight)
+    : copyHeight;
+}
+
+function getTextModeInlineRowHeight(
+  copyHeight,
+  disclaimerHeight,
+  includeDisclaimerInRowHeight,
+) {
+  return (
+    SUGGEST_ROW_PADDING_Y_PX * 2 +
+    getTextModeInlineRowContentHeight(
+      copyHeight,
+      disclaimerHeight,
+      includeDisclaimerInRowHeight,
+    )
+  );
+}
 export const DISCLAIMER_TEXT_MAX_FONT_SIZE_PX = 20;
 const DISCLAIMER_TEXT_EXTENDED_MAX_FONT_SIZE_PX = 32;
 /** Запас к норме типа при расчёте площади (п.п.) */
@@ -51,7 +77,7 @@ export const DISCLAIMER_TEXT_TARGET_SURPLUS_PP = 4;
 export const DISCLAIMER_TEXT_MAX_AREA_OVERSHOOT = 1.08;
 export const DISCLAIMER_TEXT_LINE_HEIGHT_RATIO = 1.2;
 export const DISCLAIMER_TEXT_LETTER_SPACING_EM = 0.06;
-export const DISCLAIMER_TEXT_PADDING_X_PX = 4;
+export const DISCLAIMER_TEXT_PADDING_X_PX = 0;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT = 300;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR = 400;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM = 500;
@@ -59,6 +85,8 @@ export const DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM = 500;
 export const DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR_THRESHOLD_PX = 13;
 /** С кегля > этого — Light */
 export const DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT_THRESHOLD_PX = 15;
+/** Текстовое 3: 8–10 px — Regular, > 10 px — Light */
+export const DISCLAIMER_TEXT_3_FONT_WEIGHT_LIGHT_THRESHOLD_PX = 10;
 
 export function getDisclaimerTextFontWeight(fontSizePx) {
   if (!Number.isFinite(fontSizePx)) {
@@ -75,6 +103,35 @@ export function getDisclaimerTextFontWeight(fontSizePx) {
 
   return DISCLAIMER_TEXT_FONT_WEIGHT_MEDIUM;
 }
+
+export function getDisclaimerText3FontWeight(fontSizePx) {
+  if (!Number.isFinite(fontSizePx)) {
+    return DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR;
+  }
+
+  if (fontSizePx > DISCLAIMER_TEXT_3_FONT_WEIGHT_LIGHT_THRESHOLD_PX) {
+    return DISCLAIMER_TEXT_FONT_WEIGHT_LIGHT;
+  }
+
+  return DISCLAIMER_TEXT_FONT_WEIGHT_REGULAR;
+}
+
+let resolveDisclaimerFontWeight = getDisclaimerTextFontWeight;
+
+export function withDisclaimerFontWeightResolver(resolver, fn) {
+  const previous = resolveDisclaimerFontWeight;
+  resolveDisclaimerFontWeight = resolver;
+  try {
+    return fn();
+  } finally {
+    resolveDisclaimerFontWeight = previous;
+  }
+}
+
+function buildDisclaimerFont(fontSizePx) {
+  return `${resolveDisclaimerFontWeight(fontSizePx)} ${fontSizePx}px ${DISCLAIMER_TEXT_FONT_FAMILY}`;
+}
+
 /** Зазор между copy и дисклеймером под строкой */
 export const TEXT_MODE_DISCLAIMER_BELOW_GAP_PX = 4;
 
@@ -118,10 +175,6 @@ export function lineHeightForDisclaimerFontSize(fontSizePx) {
     1,
     Math.ceil(fontSizePx * DISCLAIMER_TEXT_LINE_HEIGHT_RATIO),
   );
-}
-
-function buildDisclaimerFont(fontSizePx) {
-  return `${getDisclaimerTextFontWeight(fontSizePx)} ${fontSizePx}px ${DISCLAIMER_TEXT_FONT_FAMILY}`;
 }
 
 function measureTextWithTracking(text, fontSizePx, ctx) {
@@ -318,14 +371,18 @@ export function layoutDisclaimerTextAtWidth(text, boxWidth, fontSizePx) {
   }
 
   const height = Math.max(lineHeight, lines.length * lineHeight);
+  const footprintWidth = Math.max(
+    1,
+    Math.ceil(contentWidth) + DISCLAIMER_TEXT_PADDING_X_PX,
+  );
 
   return {
-    width,
+    width: footprintWidth,
     height,
     lines,
     lineHeight,
     fontSizePx,
-    area: width * height,
+    area: footprintWidth * height,
   };
 }
 
@@ -451,15 +508,19 @@ export function findOptimalFontSizeForArea({
     return bestOverTarget;
   }
 
-  if (forceSingleLine) {
-    const expanded = packSingleLineExpandedToTarget(
-      normalized,
-      targetArea,
-      maxWidth,
-      maxHeight,
-      minFontSizePx,
-    );
+  const expanded = packSingleLineExpandedToTarget(
+    normalized,
+    targetArea,
+    maxWidth,
+    maxHeight,
+    minFontSizePx,
+  );
+  if (expanded) {
     return expanded;
+  }
+
+  if (forceSingleLine) {
+    return null;
   }
 
   for (
@@ -819,6 +880,7 @@ function findText2DisclaimerFit({
   minFontSizePx,
   preferredLines = null,
   bestEffort = false,
+  includeDisclaimerInRowHeight = false,
 }) {
   const normalized = normalizeDisclaimerText(text);
   if (!normalized) {
@@ -856,8 +918,11 @@ function findText2DisclaimerFit({
     }
 
     const copyHeight = getTextModeCopyHeight(copyLayout, title, copyWidth);
-    // Высота строки — только от copy; дисклеймер центрируется в превью поверх строки.
-    const rowHeight = SUGGEST_ROW_PADDING_Y_PX * 2 + copyHeight;
+    const rowHeight = getTextModeInlineRowHeight(
+      copyHeight,
+      disclaimer.height,
+      includeDisclaimerInRowHeight,
+    );
     const targetArea = getTextModeTargetArea(cellWidth, rowHeight, targetPercent);
     const areaCap = targetArea * DISCLAIMER_TEXT_MAX_AREA_OVERSHOOT;
 
@@ -911,6 +976,7 @@ function buildText2HardFallback({
   minLines = 1,
   maxLines,
   preferredLines = null,
+  includeDisclaimerInRowHeight = false,
 }) {
   const normalized = normalizeDisclaimerText(text);
   const maxDisclaimerWidth = Math.max(1, innerWidth - gap - minCopyWidth);
@@ -965,7 +1031,11 @@ function buildText2HardFallback({
     title,
     Math.max(copyWidth, minCopyWidth),
   );
-  const rowHeight = SUGGEST_ROW_PADDING_Y_PX * 2 + copyHeight;
+  const rowHeight = getTextModeInlineRowHeight(
+    copyHeight,
+    disclaimer.height,
+    includeDisclaimerInRowHeight,
+  );
   const targetArea = getTextModeTargetArea(cellWidth, rowHeight, targetPercent);
 
   return buildTextModeResult({
@@ -990,6 +1060,7 @@ export function solveTextMode2RowLayout({
   maxLines = DISCLAIMER_TEXT_2_MAX_LINES,
   maxTitleLines = DISCLAIMER_TEXT_2_MAX_TITLE_LINES,
   preferredLines = null,
+  includeDisclaimerInRowHeight = false,
 }) {
   const minDisclaimerLines = Math.max(1, Math.min(minLines, maxLines));
   const innerWidth = cellWidth - SUGGEST_ROW_COPY_CHROME_PX;
@@ -1058,6 +1129,7 @@ export function solveTextMode2RowLayout({
       minFontSizePx,
       preferredLines,
       bestEffort,
+      includeDisclaimerInRowHeight,
     });
   };
 
@@ -1096,6 +1168,85 @@ export function solveTextMode2RowLayout({
     minLines: minDisclaimerLines,
     maxLines,
     preferredLines,
+    includeDisclaimerInRowHeight,
+  });
+}
+
+/**
+ * Текстовое 3: дисклеймер всегда под заголовком и сайтом.
+ * Кегль как в «Текстовое» (от 8 px), подбор под целевую площадь, 1+ строк по необходимости.
+ */
+export function solveTextMode3RowLayout(params) {
+  return withDisclaimerFontWeightResolver(getDisclaimerText3FontWeight, () =>
+    solveTextMode3RowLayoutInner(params),
+  );
+}
+
+function solveTextMode3RowLayoutInner({
+  cellWidth,
+  text,
+  title,
+  domain,
+  targetPercent,
+  maxBelowDisclaimerHeight = null,
+  minFontSizePx = DISCLAIMER_TEXT_MIN_FONT_SIZE_PX,
+}) {
+  const belowInline = tryDisclaimerBelowCopyInline({
+    cellWidth,
+    text,
+    title,
+    domain,
+    targetPercent,
+    maxBelowDisclaimerHeight,
+  });
+  if (belowInline) {
+    return belowInline;
+  }
+
+  const belowStacked = tryDisclaimerBelowCopyStacked({
+    cellWidth,
+    text,
+    title,
+    domain,
+    targetPercent,
+    maxBelowDisclaimerHeight,
+  });
+  if (belowStacked) {
+    return belowStacked;
+  }
+
+  const copyWidth = getSuggestCopyWidth(cellWidth, 0);
+  const copyLayout = resolveTextModeCopyLayout(title, domain, copyWidth);
+  const copyBlockHeight = getTextModeRowContentHeight(copyLayout, title, copyWidth);
+  const targetArea = getTextModeTargetArea(cellWidth, copyBlockHeight, targetPercent);
+  const normalized = normalizeDisclaimerText(text);
+  const lineHeight = lineHeightForDisclaimerFontSize(minFontSizePx);
+  const fallbackLines = normalized
+    ? wrapDisclaimerTextLines(normalized, copyWidth, minFontSizePx)
+    : [];
+  const disclaimerHeight = Math.max(
+    lineHeight,
+    lineHeight * Math.max(1, fallbackLines.length),
+  );
+  const rowHeight =
+    copyBlockHeight + TEXT_MODE_DISCLAIMER_BELOW_GAP_PX + disclaimerHeight;
+
+  return buildTextModeResult({
+    placement: 'below',
+    copyLayout,
+    cellWidth,
+    cellHeight: rowHeight,
+    targetArea,
+    disclaimer: {
+      fontSizePx: minFontSizePx,
+      width: copyWidth,
+      height: disclaimerHeight,
+      lines: fallbackLines.length > 0 ? fallbackLines : [normalized],
+      lineHeight,
+      area: 0,
+    },
+    copyWidth,
+    targetMet: false,
   });
 }
 

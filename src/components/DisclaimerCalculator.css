@@ -43,6 +43,9 @@
 }
 
 .disclaimer-calc__controls-row--options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
@@ -122,21 +125,45 @@
   background: rgba(0, 119, 255, 0.06);
 }
 
-.disclaimer-calc__scaling-modes {
+.disclaimer-calc__scaling-field {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 0 auto;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: auto;
+  min-width: 0;
 }
 
-.disclaimer-calc__scaling-modes .area-percent-options__item {
-  flex: 0 0 auto;
+.disclaimer-calc__scaling-field .field__label {
+  margin: 0;
+  font-size: 12px;
+  line-height: 14px;
+  color: rgba(0, 0, 0, 0.52);
+}
+
+.disclaimer-calc__scaling-select {
+  box-sizing: border-box;
+  min-width: 180px;
+  max-width: 100%;
   min-height: 36px;
-  padding: 0 12px;
+  padding: 0 32px 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23000' stroke-opacity='0.45' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  font-family: 'YS Text', 'Helvetica Neue', Arial, sans-serif;
   font-size: 13px;
   line-height: 16px;
-  white-space: nowrap;
+  color: #000;
+  cursor: pointer;
+  appearance: none;
+}
+
+.disclaimer-calc__scaling-select:focus {
+  outline: none;
+  border-color: rgba(0, 119, 255, 0.35);
+  box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.12);
 }
 
 .disclaimer-calc__preview-section {
@@ -175,6 +202,10 @@
 .disclaimer-calc__row-preview-scroll {
   overflow-x: auto;
   padding: 16px;
+}
+
+.disclaimer-calc__row-preview-scroll .suggest-panel {
+  margin-inline: auto;
 }
 
 .disclaimer-calc__row-details {
@@ -217,7 +248,8 @@
   font-weight: 500;
 }
 
-.disclaimer-calc__row-summary-size {
+.disclaimer-calc__row-summary-size,
+.disclaimer-calc__row-summary-percent {
   font-variant-numeric: tabular-nums;
   color: rgba(0, 0, 0, 0.56);
 }
@@ -481,10 +513,13 @@
     flex-wrap: wrap;
   }
 
-  .disclaimer-calc__scaling-modes {
+  .disclaimer-calc__scaling-field {
     margin-left: 0;
     width: 100%;
-    justify-content: flex-start;
+  }
+
+  .disclaimer-calc__scaling-select {
+    width: 100%;
   }
 }
 

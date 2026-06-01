@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   CELL_SIZE_PRESETS,
   findCellSizePreset,
+  getDefaultCellSizePreset,
 } from '../utils/cellSizePresets.js';
 import {
   DISCLAIMER_CATEGORIES,
@@ -19,7 +20,7 @@ import './DisclaimerCalculator.css';
 const CELL_WIDTH_MIN = 550;
 const CELL_WIDTH_MAX = 2000;
 
-const DEFAULT_CELL = CELL_SIZE_PRESETS[0];
+const DEFAULT_CELL = getDefaultCellSizePreset();
 
 const DEFAULTS = {
   cellWidth: DEFAULT_CELL.width,
@@ -119,23 +120,23 @@ export default function DisclaimerCalculator() {
             <span>Подсветка</span>
           </label>
 
-          <div
-            className="disclaimer-calc__scaling-modes area-percent-options"
-            role="radiogroup"
-            aria-label="Масштабирование дисклеймера"
-          >
-            {DISCLAIMER_SCALING_OPTIONS.map((option) => (
-              <label key={option.value} className="area-percent-options__item">
-                <input
-                  type="radio"
-                  name="scalingMode"
-                  value={option.value}
-                  checked={scalingMode === option.value}
-                  onChange={() => setScalingMode(option.value)}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
+          <div className="disclaimer-calc__scaling-field">
+            <label className="field__label" htmlFor="scaling-mode-select">
+              Масштабирование
+            </label>
+            <select
+              id="scaling-mode-select"
+              className="disclaimer-calc__scaling-select"
+              value={scalingMode}
+              onChange={(e) => setScalingMode(e.target.value)}
+              aria-label="Масштабирование дисклеймера"
+            >
+              {DISCLAIMER_SCALING_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </section>

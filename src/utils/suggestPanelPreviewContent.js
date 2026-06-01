@@ -1,5 +1,8 @@
 import { SUGGEST_ORGANIC_ROWS } from './suggestOrganicRows.js';
 
+/** Позиция рекламной строки в списке саджеста (1-based) */
+export const SUGGEST_AD_ROW_POSITION = 3;
+
 /** Запрос в омнибоксе по типу дисклеймера (если задан — иначе из темы) */
 export const SUGGEST_PANEL_QUERY_BY_CATEGORY = {
   medicine: 'лекарства',

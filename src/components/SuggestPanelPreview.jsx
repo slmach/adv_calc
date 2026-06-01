@@ -1,6 +1,7 @@
 import {
   getSuggestOrganicRowsForCategory,
   getSuggestPanelQuery,
+  SUGGEST_AD_ROW_POSITION,
 } from '../utils/suggestPanelPreviewContent.js';
 import { getSuggestTheme } from '../utils/suggestThemes.js';
 import SuggestOrganicRow from './SuggestOrganicRow.jsx';
@@ -23,6 +24,8 @@ export default function SuggestPanelPreview({
   const theme = getSuggestTheme(themeId);
   const omniboxQuery = getSuggestPanelQuery(categoryId, theme.query);
   const organicRows = getSuggestOrganicRowsForCategory(categoryId);
+  const organicBeforeAd = organicRows.slice(0, SUGGEST_AD_ROW_POSITION - 1);
+  const organicAfterAd = organicRows.slice(SUGGEST_AD_ROW_POSITION - 1);
 
   return (
     <div
@@ -58,10 +61,12 @@ export default function SuggestPanelPreview({
         <div className="suggest-panel__divider" />
       </div>
 
-      <div className="suggest-panel__ad-slot">{children}</div>
-
       <div className="suggest-panel__organic-list">
-        {organicRows.map((row) => (
+        {organicBeforeAd.map((row) => (
+          <SuggestOrganicRow key={row.id} row={row} />
+        ))}
+        <div className="suggest-panel__ad-slot">{children}</div>
+        {organicAfterAd.map((row) => (
           <SuggestOrganicRow key={row.id} row={row} />
         ))}
       </div>

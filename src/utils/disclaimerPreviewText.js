@@ -10,10 +10,22 @@ export const DISCLAIMER_PREVIEW_TEXT_BY_CATEGORY = {
   energy: 'Чрезмерное употребление вредит здоровью',
 };
 
+/** Тексты дисклеймера только для режима «Текстовое 3» (если отличаются) */
+export const DISCLAIMER_TEXT3_PREVIEW_TEXT_BY_CATEGORY = {
+  diet: 'Биологически активная добавка. Не является лекарственным средством',
+};
+
 export function getDisclaimerPreviewText(categoryId) {
   return (
     DISCLAIMER_PREVIEW_TEXT_BY_CATEGORY[categoryId] ??
     DISCLAIMER_PREVIEW_TEXT_BY_CATEGORY.medicine
+  );
+}
+
+export function getDisclaimerText3PreviewText(categoryId) {
+  return (
+    DISCLAIMER_TEXT3_PREVIEW_TEXT_BY_CATEGORY[categoryId] ??
+    getDisclaimerPreviewText(categoryId)
   );
 }
 

@@ -27,6 +27,10 @@ export function getSuggestRowPreviewDomain(categoryId) {
   return SUGGEST_ROW_PREVIEW_DOMAINS[categoryId] ?? SUGGEST_ROW_PREVIEW_DOMAINS.medicine;
 }
 
+/** Юр. информация по кнопке (i) в превью suggest_row */
+export const SUGGEST_ROW_ADVERTISER_LEGAL_TEXT =
+  'ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "ФИНАНСОВЫЕ И ПЛАТЕЖНЫЕ ТЕХНОЛОГИИ", ИНН 9705212635, ID #315061219';
+
 /**
  * Горизонтальные отступы строки без зоны дисклеймера:
  * padding 16+14, favicon 20, gaps 12+12+12, кнопка (i) 20.

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import iconInfo from '../../assets/icon-info.svg';
 import defaultDisclaimerRow from '../../assets/disclaimer-row-default.svg';
 import {
@@ -13,6 +13,7 @@ import {
 import {
   getSuggestRowPreviewDomain,
   getSuggestRowPreviewTitle,
+  SUGGEST_ROW_ADVERTISER_LEGAL_TEXT,
 } from '../utils/suggestRowPreviewConstants.js';
 import './SuggestRowPreview.css';
 
@@ -27,6 +28,7 @@ function DisclaimerBlock({
   disclaimerMarkup,
   disclaimerImage,
   showDisclaimerHighlight,
+  getDisclaimerFontWeight = getDisclaimerTextFontWeight,
 }) {
   if (!(disclaimerWidth > 0 && disclaimerHeight > 0)) {
     return null;
@@ -37,7 +39,7 @@ function DisclaimerBlock({
 
   const textStyle = disclaimerText
     ? {
-        fontWeight: getDisclaimerTextFontWeight(disclaimerFontSize),
+        fontWeight: getDisclaimerFontWeight(disclaimerFontSize),
         ...(disclaimerFontSize != null
           ? {
               fontSize: `${disclaimerFontSize}px`,
@@ -116,9 +118,12 @@ export default function SuggestRowPreview({
   disclaimerRenderLines,
   showDisclaimerHighlight = true,
   centerDisclaimerInCell = false,
+  getDisclaimerFontWeight = getDisclaimerTextFontWeight,
+  advertiserLegalText = SUGGEST_ROW_ADVERTISER_LEGAL_TEXT,
   onLayoutHeight,
 }) {
   const rootRef = useRef(null);
+  const [legalExpanded, setLegalExpanded] = useState(false);
   const disclaimerImage = disclaimerSrc || defaultDisclaimerRow;
   const previewTitle = title ?? getSuggestRowPreviewTitle('medicine');
   const previewDomain = domain ?? getSuggestRowPreviewDomain('medicine');
@@ -194,6 +199,7 @@ export default function SuggestRowPreview({
     textCopyLayout,
     showDisclaimerHighlight,
     centerDisclaimerInCell,
+    legalExpanded,
   ]);
 
   const rootClassName = [
@@ -266,6 +272,7 @@ export default function SuggestRowPreview({
                 disclaimerMarkup={disclaimerMarkup}
                 disclaimerImage={disclaimerImage}
                 showDisclaimerHighlight={showDisclaimerHighlight}
+                getDisclaimerFontWeight={getDisclaimerFontWeight}
               />
             )}
           </div>
@@ -278,10 +285,27 @@ export default function SuggestRowPreview({
               disclaimerLineHeight={disclaimerLineHeight}
               disclaimerSingleLine={disclaimerSingleLine}
               disclaimerText={disclaimerText}
+              disclaimerRenderLines={disclaimerRenderLines}
               disclaimerMarkup={disclaimerMarkup}
               disclaimerImage={disclaimerImage}
               showDisclaimerHighlight={showDisclaimerHighlight}
+              getDisclaimerFontWeight={getDisclaimerFontWeight}
             />
+          )}
+
+          {advertiserLegalText && (
+            <div
+              className={[
+                'suggest-row-preview__legal-wrap',
+                legalExpanded && 'suggest-row-preview__legal-wrap--open',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              <div className="suggest-row-preview__legal-inner">
+                <p className="suggest-row-preview__legal-text">{advertiserLegalText}</p>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -289,8 +313,15 @@ export default function SuggestRowPreview({
       <div className="suggest-row-preview__right">
         <button
           type="button"
-          className="suggest-row-preview__info"
+          className={[
+            'suggest-row-preview__info',
+            legalExpanded && 'suggest-row-preview__info--active',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           aria-label="Подробнее о рекламе"
+          aria-expanded={legalExpanded}
+          onClick={() => setLegalExpanded((open) => !open)}
         >
           <img src={iconInfo} alt="" width={18} height={18} />
         </button>

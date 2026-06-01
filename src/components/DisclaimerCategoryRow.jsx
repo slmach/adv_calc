@@ -13,6 +13,7 @@ import {
 import { getDisclaimerPreviewMarkup } from '../utils/disclaimerAssets.js';
 import {
   getDisclaimerPreviewText,
+  getDisclaimerText3PreviewText,
   getDisclaimerText2PreferredLines,
 } from '../utils/disclaimerPreviewText.js';
 import { resolveAdaptiveVariant } from '../utils/resolveAdaptiveDisclaimer.js';
@@ -23,14 +24,18 @@ import {
   isAnyTextScalingMode,
   isFixedScalingMode,
   isText2ScalingMode,
+  isText3ScalingMode,
   isTextScalingMode,
   usesCategoryTargetPercent,
 } from '../utils/disclaimerScaling.js';
 import {
+  getDisclaimerTextFontWeight,
+  getDisclaimerText3FontWeight,
   getTextModeEffectiveTargetPercent,
   getText2MaxDisclaimerLines,
   getText2MinDisclaimerLines,
   solveTextMode2RowLayout,
+  solveTextMode3RowLayout,
   solveTextModeRowLayout,
 } from '../utils/disclaimerTextLayout.js';
 import {
@@ -63,6 +68,7 @@ export default function DisclaimerCategoryRow({
   const adaptiveScaling = isAdaptiveScalingMode(scalingMode);
   const textScaling = isTextScalingMode(scalingMode);
   const text2Scaling = isText2ScalingMode(scalingMode);
+  const text3Scaling = isText3ScalingMode(scalingMode);
   const anyTextScaling = isAnyTextScalingMode(scalingMode);
   const [layoutCellHeight, setLayoutCellHeight] = useState(cellHeight);
 
@@ -96,6 +102,10 @@ export default function DisclaimerCategoryRow({
     ? getTextModeEffectiveTargetPercent(targetPercent)
     : targetPercent;
 
+  const effectiveTargetPercent = anyTextScaling
+    ? textModeTargetPercent
+    : targetPercent;
+
   const adaptiveVariantResolved = useMemo(() => {
     if (!adaptiveScaling) {
       return null;
@@ -127,9 +137,21 @@ export default function DisclaimerCategoryRow({
 
   const previewTitle = getSuggestRowPreviewTitle(category.id);
   const previewDomain = getSuggestRowPreviewDomain(category.id);
-  const previewDisclaimerText = getDisclaimerPreviewText(category.id);
+  const previewDisclaimerText = text3Scaling
+    ? getDisclaimerText3PreviewText(category.id)
+    : getDisclaimerPreviewText(category.id);
 
   const result = useMemo(() => {
+    if (text3Scaling) {
+      return solveTextMode3RowLayout({
+        cellWidth,
+        text: previewDisclaimerText,
+        title: previewTitle,
+        domain: previewDomain,
+        targetPercent,
+      });
+    }
+
     if (text2Scaling) {
       return solveTextMode2RowLayout({
         cellWidth,
@@ -176,6 +198,7 @@ export default function DisclaimerCategoryRow({
     scalingMode,
     textScaling,
     text2Scaling,
+    text3Scaling,
     previewTitle,
     previewDomain,
     previewDisclaimerText,
@@ -224,7 +247,7 @@ export default function DisclaimerCategoryRow({
                 : undefined
             }
             disclaimerRenderLines={
-              text2Scaling && result.disclaimerLines?.length > 1
+              anyTextScaling && result.disclaimerLines?.length > 1
                 ? result.disclaimerLines
                 : undefined
             }
@@ -234,6 +257,9 @@ export default function DisclaimerCategoryRow({
             disclaimerText={disclaimerText}
             showDisclaimerHighlight={showDisclaimerHighlight}
             centerDisclaimerInCell={fixedScaling}
+            getDisclaimerFontWeight={
+              text3Scaling ? getDisclaimerText3FontWeight : getDisclaimerTextFontWeight
+            }
             onLayoutHeight={anyTextScaling ? undefined : handleLayoutHeight}
           />
         </SuggestPanelPreview>
@@ -246,6 +272,13 @@ export default function DisclaimerCategoryRow({
             {anyTextScaling && result.fontSizePx != null
               ? ` · ${result.fontSizePx}px`
               : ''}
+          </span>
+          <span className="disclaimer-calc__row-summary-percent">
+            {formatPercent(effectiveTargetPercent)}
+            {' / '}
+            <span className={!result.targetMet ? 'disclaimer-calc__warn' : undefined}>
+              {formatPercent(result.actualPercent)}
+            </span>
           </span>
           <span className="disclaimer-calc__row-summary-label">{category.label}</span>
         </summary>

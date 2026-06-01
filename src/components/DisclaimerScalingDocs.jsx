@@ -5,7 +5,7 @@ import {
 } from '../utils/disclaimerAreaCalc.js';
 import { BANKRUPTCY_ADAPTIVE_L_MIN_HEIGHT_PX } from '../utils/disclaimerAdaptiveAssets.js';
 import { DISCLAIMER_CATEGORIES } from '../utils/disclaimerCategories.js';
-import { getDisclaimerPreviewText } from '../utils/disclaimerPreviewText.js';
+import { getDisclaimerPreviewText, getDisclaimerText3PreviewText } from '../utils/disclaimerPreviewText.js';
 import {
   DISCLAIMER_FIXED_TARGET_PERCENT,
   DISCLAIMER_SCALING_ADAPTIVE,
@@ -13,6 +13,7 @@ import {
   DISCLAIMER_SCALING_PROPORTIONAL,
   DISCLAIMER_SCALING_TEXT,
   DISCLAIMER_SCALING_TEXT_2,
+  DISCLAIMER_SCALING_TEXT_3,
 } from '../utils/disclaimerScaling.js';
 import { SUGGEST_ROW_HORIZONTAL_CHROME_PX } from '../utils/suggestRowPreviewConstants.js';
 
@@ -317,6 +318,49 @@ export default function DisclaimerScalingDocs({ scalingMode }) {
             влияет (может выступать за её границы).
           </li>
           <li>Дисклеймер вертикально центрируется справа относительно блока copy.</li>
+        </ul>
+      </DocSection>
+
+      <DocSection
+        title="6. Текстовое 3"
+        isActive={scalingMode === DISCLAIMER_SCALING_TEXT_3}
+      >
+        <p>
+          <strong>Назначение:</strong> как «Текстовое» (целевая площадь = норма типа + 4
+          п.п., кегль 8–32 px), но дисклеймер <strong>всегда под заголовком и сайтом</strong> —
+          не уходит вправо. Кегль подбирается под целевую площадь; текст переносится на
+          столько строк, сколько нужно (минимум 1).
+        </p>
+        <h4>Порядок раскладки</h4>
+        <ul className="disclaimer-calc__docs-list">
+          <li>
+            Заголовок + сайт + «Реклама» в одну строку, если влезают; иначе сайт и метка
+            переносятся под заголовок.
+          </li>
+          <li>
+            Дисклеймер — на всю ширину copy под блоком заголовка, зазор 4 px.
+          </li>
+          <li>
+            Высота ячейки пересчитывается итеративно: copy + зазор + дисклеймер; площадь
+            считается от итоговой высоты.
+          </li>
+        </ul>
+        <h4>Тексты по типам</h4>
+        <ul className="disclaimer-calc__docs-list">
+          {DISCLAIMER_CATEGORIES.map((category) => (
+            <li key={category.id}>
+              <strong>{category.label}</strong> —{' '}
+              {getDisclaimerText3PreviewText(category.id)}
+            </li>
+          ))}
+        </ul>
+        <h4>Отображение в превью</h4>
+        <ul className="disclaimer-calc__docs-list">
+          <li>
+            Типографика: 8–10 px — Regular (400), &gt;10 px — Light (300); uppercase,
+            letter-spacing 0.06em, line-height ×1.2.
+          </li>
+          <li>Дисклеймер в потоке под copy, над юр. текстом по кнопке (i).</li>
         </ul>
       </DocSection>
       </div>
