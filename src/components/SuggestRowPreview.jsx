@@ -123,7 +123,10 @@ export default function SuggestRowPreview({
   onLayoutHeight,
 }) {
   const rootRef = useRef(null);
+  const layoutCoreRef = useRef(null);
   const [legalExpanded, setLegalExpanded] = useState(false);
+  /** Пока true — строка может расти (открыто или идёт анимация закрытия) */
+  const [legalRowGrown, setLegalRowGrown] = useState(false);
   const disclaimerImage = disclaimerSrc || defaultDisclaimerRow;
   const previewTitle = title ?? getSuggestRowPreviewTitle('medicine');
   const previewDomain = domain ?? getSuggestRowPreviewDomain('medicine');
@@ -170,18 +173,29 @@ export default function SuggestRowPreview({
       : undefined);
 
   useLayoutEffect(() => {
-    const node = rootRef.current;
-    if (!node || !onLayoutHeight) {
+    const root = rootRef.current;
+    if (!root || !onLayoutHeight) {
       return undefined;
     }
 
     const report = () => {
-      onLayoutHeight(node.getBoundingClientRect().height);
+      if (legalExpanded || legalRowGrown) {
+        return;
+      }
+
+      const legalEl = root.querySelector('.suggest-row-preview__legal-wrap');
+      const legalHeight = legalEl?.getBoundingClientRect().height ?? 0;
+      const totalHeight = root.getBoundingClientRect().height;
+      onLayoutHeight(Math.ceil(totalHeight - legalHeight));
     };
 
     report();
     const observer = new ResizeObserver(report);
-    observer.observe(node);
+    observer.observe(root);
+    const legalEl = root.querySelector('.suggest-row-preview__legal-wrap');
+    if (legalEl) {
+      observer.observe(legalEl);
+    }
 
     return () => observer.disconnect();
   }, [
@@ -200,11 +214,53 @@ export default function SuggestRowPreview({
     showDisclaimerHighlight,
     centerDisclaimerInCell,
     legalExpanded,
+    legalRowGrown,
+  ]);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) {
+      return undefined;
+    }
+
+    const legalTextEl = root.querySelector('.suggest-row-preview__legal-text');
+    if (!legalTextEl) {
+      return undefined;
+    }
+
+    const onTransitionEnd = (event) => {
+      if (event.target !== legalTextEl || event.propertyName !== 'opacity') {
+        return;
+      }
+
+      if (legalExpanded) {
+        return;
+      }
+
+      setLegalRowGrown(false);
+
+      if (!onLayoutHeight) {
+        return;
+      }
+
+      const legalEl = root.querySelector('.suggest-row-preview__legal-wrap');
+      const legalHeight = legalEl?.getBoundingClientRect().height ?? 0;
+      const totalHeight = root.getBoundingClientRect().height;
+      onLayoutHeight(Math.ceil(totalHeight - legalHeight));
+    };
+
+    legalTextEl.addEventListener('transitionend', onTransitionEnd);
+    return () => legalTextEl.removeEventListener('transitionend', onTransitionEnd);
+  }, [
+    legalExpanded,
+    onLayoutHeight,
+    advertiserLegalText,
   ]);
 
   const rootClassName = [
     'suggest-row-preview',
     centerDisclaimerInCell && 'suggest-row-preview--center-disclaimer',
+    legalExpanded && 'suggest-row-preview--legal-open',
     textMode && disclaimerInline && 'suggest-row-preview--text-disclaimer-inline',
     textMode && !disclaimerInline && 'suggest-row-preview--text-disclaimer-below',
     textCopyLayout === 'inline' && 'suggest-row-preview--text-copy-inline',
@@ -222,7 +278,8 @@ export default function SuggestRowPreview({
         minHeight: `${height}px`,
         ...(centerDisclaimerInCell
           ? { '--row-min-height': `${height}px` }
-          : undefined),
+          : { '--row-calculated-height': `${height}px` }),
+        ...(legalRowGrown ? { height: 'auto' } : undefined),
       }}
       data-name="suggest_row"
     >
@@ -232,35 +289,53 @@ export default function SuggestRowPreview({
         </div>
 
         <div className="suggest-row-preview__content">
-          <div
-            className="suggest-row-preview__title-row"
-            style={
-              textMode && disclaimerInline && disclaimerWidth > 0
-                ? {
-                    paddingRight: `${disclaimerWidth + SUGGEST_ROW_COPY_DISCLAIMER_GAP_PX}px`,
-                  }
-                : undefined
-            }
-          >
+          <div ref={layoutCoreRef} className="suggest-row-preview__layout-core">
             <div
-              className="suggest-row-preview__copy"
+              className="suggest-row-preview__title-row"
               style={
-                textMode && resolvedCopyWidth > 0
-                  ? { maxWidth: `${resolvedCopyWidth}px` }
+                textMode && disclaimerInline && disclaimerWidth > 0
+                  ? {
+                      paddingRight: `${disclaimerWidth + SUGGEST_ROW_COPY_DISCLAIMER_GAP_PX}px`,
+                    }
                   : undefined
               }
             >
-              <p className="suggest-row-preview__title">{previewTitle}</p>
-              <div className="suggest-row-preview__meta">
-                <span className="suggest-row-preview__domain">{previewDomain}</span>
-                <span className="suggest-row-preview__dot" aria-hidden="true">
-                  ·
-                </span>
-                <span className="suggest-row-preview__ad">Реклама</span>
+              <div
+                className="suggest-row-preview__copy"
+                style={
+                  textMode && resolvedCopyWidth > 0
+                    ? { maxWidth: `${resolvedCopyWidth}px` }
+                    : undefined
+                }
+              >
+                <p className="suggest-row-preview__title">{previewTitle}</p>
+                <div className="suggest-row-preview__meta">
+                  <span className="suggest-row-preview__domain">{previewDomain}</span>
+                  <span className="suggest-row-preview__dot" aria-hidden="true">
+                    ·
+                  </span>
+                  <span className="suggest-row-preview__ad">Реклама</span>
+                </div>
               </div>
+
+              {disclaimerInline && (
+                <DisclaimerBlock
+                  disclaimerWidth={disclaimerWidth}
+                  disclaimerHeight={disclaimerHeight}
+                  disclaimerFontSize={disclaimerFontSize}
+                  disclaimerLineHeight={disclaimerLineHeight}
+                  disclaimerSingleLine={disclaimerSingleLine}
+                  disclaimerText={disclaimerText}
+                  disclaimerRenderLines={disclaimerRenderLines}
+                  disclaimerMarkup={disclaimerMarkup}
+                  disclaimerImage={disclaimerImage}
+                  showDisclaimerHighlight={showDisclaimerHighlight}
+                  getDisclaimerFontWeight={getDisclaimerFontWeight}
+                />
+              )}
             </div>
 
-            {disclaimerInline && (
+            {!disclaimerInline && (
               <DisclaimerBlock
                 disclaimerWidth={disclaimerWidth}
                 disclaimerHeight={disclaimerHeight}
@@ -276,22 +351,6 @@ export default function SuggestRowPreview({
               />
             )}
           </div>
-
-          {!disclaimerInline && (
-            <DisclaimerBlock
-              disclaimerWidth={disclaimerWidth}
-              disclaimerHeight={disclaimerHeight}
-              disclaimerFontSize={disclaimerFontSize}
-              disclaimerLineHeight={disclaimerLineHeight}
-              disclaimerSingleLine={disclaimerSingleLine}
-              disclaimerText={disclaimerText}
-              disclaimerRenderLines={disclaimerRenderLines}
-              disclaimerMarkup={disclaimerMarkup}
-              disclaimerImage={disclaimerImage}
-              showDisclaimerHighlight={showDisclaimerHighlight}
-              getDisclaimerFontWeight={getDisclaimerFontWeight}
-            />
-          )}
 
           {advertiserLegalText && (
             <div
@@ -321,7 +380,14 @@ export default function SuggestRowPreview({
             .join(' ')}
           aria-label="Подробнее о рекламе"
           aria-expanded={legalExpanded}
-          onClick={() => setLegalExpanded((open) => !open)}
+          onClick={() => {
+            if (legalExpanded) {
+              setLegalExpanded(false);
+              return;
+            }
+            setLegalExpanded(true);
+            setLegalRowGrown(true);
+          }}
         >
           <img src={iconInfo} alt="" width={18} height={18} />
         </button>
